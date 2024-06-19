@@ -26,7 +26,7 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "chatpr.pythonanywhere.com"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "iosl.pythonanywhere.com"]
 
 
 # Application definition
@@ -90,10 +90,10 @@ if os.name == "posix":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",
-            "NAME": "chatpr$default",  # Database name
+            "NAME": "iosl$default",  # Database name
             "USER": os.environ["MYSQL_USERNAME"],
             "PASSWORD": os.environ["MYSQL_USER_PASSWORD"],
-            "HOST": "chatpr.mysql.pythonanywhere-services.com",  # Database host address
+            "HOST": "iosl.mysql.pythonanywhere-services.com",  # Database host address
             "PORT": "",  # Leave it empty for default MySQL port (3306)
         }
     }
@@ -141,9 +141,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = "static/"
-STATIC_ROOT = "/home/chatpr/static"  # prod only
+STATIC_ROOT = "/home/iosl/static"  # prod only
 MEDIA_URL = "media/"
-MEDIA_ROOT = "/home/chatpr/media"  # prod only
+MEDIA_ROOT = "/home/iosl/media"  # prod only
 
 
 # Default primary key field type
