@@ -35,6 +35,7 @@ class Property(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     name = models.CharField(max_length=255, unique=True)
+    pin = models.URLField(max_length=255, null=True, blank=True)
 
     class Meta:
         verbose_name = "Property"

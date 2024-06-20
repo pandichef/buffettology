@@ -31,6 +31,7 @@ class PropertyAdmin(admin.ModelAdmin):
     list_display = (
         "created_at",
         "name",
+        "pin",
     )
     search_fields = ("name",)
     # model = Property
