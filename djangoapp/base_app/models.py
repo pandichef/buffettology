@@ -9,7 +9,7 @@ from django.conf import settings
 
 # base_openai_model = "gpt-3.5-turbo-1106"
 # base_openai_model = "gpt-4" # on waitlist
-base_openai_model = settings.BASE_OPENAI_MODEL
+# base_openai_model = settings.BASE_OPENAI_MODEL
 
 
 # class Search(models.Lookup):
