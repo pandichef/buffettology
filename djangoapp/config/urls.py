@@ -17,11 +17,11 @@ import os
 from django.contrib import admin
 from django.urls import path, include
 
-# from base_app.views import query_view
+from base_app.views import script_view
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    # path("", query_view, name="query"),
+    path("", script_view, name="scripts"),
 ]
 
 admin.site.site_header = "IOSL Database"
