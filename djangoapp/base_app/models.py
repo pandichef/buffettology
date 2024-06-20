@@ -31,6 +31,29 @@ class CustomUser(AbstractUser):
     pass
 
 
+class Property(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    name = models.CharField(max_length=255, unique=True)
+
+    class Meta:
+        verbose_name = "Property"
+        verbose_name_plural = "Properties"
+
+
+class Document(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    property = models.ForeignKey(Property, on_delete=models.PROTECT)
+    type = models.PositiveSmallIntegerField(
+        # max_length=2,
+        choices=[(0, "Appraisal"), (1, "Income Statement"), (2, "Bank Statement"),],
+        default=0,
+    )
+    file = models.FileField(upload_to="")
+    # file = models.FileField(upload_to="uploads/")
+
+
 '''
 class SourceType(models.Model):
     name = models.CharField(max_length=100, unique=True)

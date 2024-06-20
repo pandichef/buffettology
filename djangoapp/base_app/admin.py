@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import (
     CustomUser,
+    Document,
+    Property,
     # SourceType,
     # Example,
     # FineTuningJob,
@@ -23,6 +25,14 @@ class CustomUserAdmin(UserAdmin):
     #     "email",
     #     "username",
     # ]
+
+
+class PropertyAdmin(admin.ModelAdmin):
+    model = Property
+
+
+class DocumentAdmin(admin.ModelAdmin):
+    model = Document
 
 
 """
@@ -251,6 +261,8 @@ class ExampleAdmin(admin.ModelAdmin):
 """
 
 admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(Property, PropertyAdmin)
+admin.site.register(Document, DocumentAdmin)
 # admin.site.register(SourceType, SourceTypeAdmin)
 # admin.site.register(FineTuningJob, FineTuningJobAdmin)
 # admin.site.register(Example, ExampleAdmin)
