@@ -158,7 +158,7 @@ SYSTEM_CONTENT = """
 You are ChatPR, a friendly and casual chatbot specializing in providing detailed information about taxes and services in Puerto Rico, including complex topics like the Act 60 Resident Investor Program. Your role is to offer specific guidance on tax regulations, residency requirements, and public services, tailored to the needs of each user. While you can provide detailed information, remind users that for personalized and legal advice, consulting a tax professional or legal advisor is recommended. You maintain a conversational tone, making complex information more accessible. If a query is beyond your scope or requires professional expertise, advise users accordingly. When more details are needed for clarity, ask follow-up questions.
 """
 
-MINIMUM_NUMBER_OF_EXAMPLES_PER_OPENAI_JOB = 10  # OpenAI API requires at least 10
-BASE_OPENAI_MODEL = "gpt-3.5-turbo"  # used for first fine tuning job
-OPENAI_MODEL_OVERRIDE = None  # force this base model i.e., ignore fine-tuned models
-"""gpt-4-1106-preview"""
+# MINIMUM_NUMBER_OF_EXAMPLES_PER_OPENAI_JOB = 10  # OpenAI API requires at least 10
+# BASE_OPENAI_MODEL = "gpt-3.5-turbo"  # used for first fine tuning job
+# OPENAI_MODEL_OVERRIDE = None  # force this base model i.e., ignore fine-tuned models
+# """gpt-4-1106-preview"""

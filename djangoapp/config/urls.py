@@ -24,7 +24,7 @@ urlpatterns = [
     # path("", query_view, name="query"),
 ]
 
-admin.site.site_header = "ChatPR Database"
-admin.site.site_title = "ChatPR"
+admin.site.site_header = "IOSL Database"
+admin.site.site_title = "IOSL"
 admin.site.index_title = "Members Only"
 # admin.site.site_url = os.environ["CHATPR_SITE_URL"]
