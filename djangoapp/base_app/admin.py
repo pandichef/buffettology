@@ -13,7 +13,7 @@ from django.urls import path, include
 from django.http import HttpResponseRedirect
 from django.db.models import F, Case, When, Value, CharField, Q
 from openai import OpenAI, BadRequestError
-
+from django.utils.html import format_html
 from .finetune import *
 
 
@@ -31,10 +31,16 @@ class PropertyAdmin(admin.ModelAdmin):
     list_display = (
         "created_at",
         "name",
-        "pin",
+        "map_url",
     )
     search_fields = ("name",)
     # model = Property
+
+    def map_url(self, obj):
+        if obj.pin:
+            return format_html('<a href="{}" target="_blank">{}</a>', obj.pin, obj.pin)
+        else:
+            return ""
 
 
 class DocumentAdmin(admin.ModelAdmin):
