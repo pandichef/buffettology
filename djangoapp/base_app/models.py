@@ -40,11 +40,14 @@ class Property(models.Model):
         verbose_name = "Property"
         verbose_name_plural = "Properties"
 
+    def __str__(self):
+        return f"{str(self.name)}"
+
 
 class Document(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    property = models.ForeignKey(Property, on_delete=models.PROTECT)
+    property = models.ForeignKey(Property, on_delete=models.PROTECT,)
     type = models.PositiveSmallIntegerField(
         # max_length=2,
         choices=[(0, "Appraisal"), (1, "Income Statement"), (2, "Bank Statement"),],

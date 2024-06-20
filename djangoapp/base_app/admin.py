@@ -28,11 +28,22 @@ class CustomUserAdmin(UserAdmin):
 
 
 class PropertyAdmin(admin.ModelAdmin):
-    model = Property
+    list_display = (
+        "created_at",
+        "name",
+    )
+    search_fields = ("name",)
+    # model = Property
 
 
 class DocumentAdmin(admin.ModelAdmin):
-    model = Document
+    list_display = (
+        "created_at",
+        "property",
+        "type",
+        "file",
+    )
+    search_fields = ("property",)
 
 
 """
