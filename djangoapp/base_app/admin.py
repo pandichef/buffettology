@@ -14,7 +14,8 @@ from django.http import HttpResponseRedirect
 from django.db.models import F, Case, When, Value, CharField, Q
 from openai import OpenAI, BadRequestError
 from django.utils.html import format_html
-from .finetune import *
+
+# from .finetune import *
 
 
 class CustomUserAdmin(UserAdmin):

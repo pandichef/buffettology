@@ -17,7 +17,7 @@ import os
 from django.contrib import admin
 from django.urls import path, include
 
-from base_app.views import script_view
+from iosl.views import script_view
 
 urlpatterns = [
     path("admin/", admin.site.urls),
