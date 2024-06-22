@@ -2,7 +2,8 @@ from django.db import models
 
 # Create your models here.
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+
+# from django.contrib.auth.models import AbstractUser
 from django.db.models import QuerySet
 from django.db.models import F, Case, When, Value, CharField, Q
 from django.conf import settings
@@ -27,8 +28,8 @@ from django.conf import settings
 # models.TextField.register_lookup(Search)
 
 
-class CustomUser(AbstractUser):
-    pass
+# class CustomUser(AbstractUser):
+#     pass
 
 
 class Property(models.Model):

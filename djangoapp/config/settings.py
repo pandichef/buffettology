@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # local apps
     "django_extensions",
+    "accounts",
     "iosl",
 ]
 
@@ -151,7 +152,7 @@ MEDIA_ROOT = "/home/iosl/media"  # prod only
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-AUTH_USER_MODEL = "iosl.CustomUser"  # new
+AUTH_USER_MODEL = "accounts.CustomUser"  # new
 
 # SYSTEM_CONTENT = "Provide advice related to taxes, accounting, or other services for residents and visitors of Puerto Rico."
 SYSTEM_CONTENT = """

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import (
-    CustomUser,
+    # CustomUser,
     Document,
     Property,
     # SourceType,
@@ -18,14 +18,14 @@ from django.utils.html import format_html
 # from .finetune import *
 
 
-class CustomUserAdmin(UserAdmin):
-    # add_form = CustomUserCreationForm
-    # form = CustomUserChangeForm
-    model = CustomUser
-    # list_display = [
-    #     "email",
-    #     "username",
-    # ]
+# class CustomUserAdmin(UserAdmin):
+# add_form = CustomUserCreationForm
+# form = CustomUserChangeForm
+# model = CustomUser
+# list_display = [
+#     "email",
+#     "username",
+# ]
 
 
 class PropertyAdmin(admin.ModelAdmin):
@@ -279,7 +279,6 @@ class ExampleAdmin(admin.ModelAdmin):
         # print("123412341234")
 """
 
-admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Property, PropertyAdmin)
 admin.site.register(Document, DocumentAdmin)
 # admin.site.register(SourceType, SourceTypeAdmin)
