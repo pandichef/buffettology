@@ -7,6 +7,7 @@ from django.db import models
 from django.db.models import QuerySet
 from django.db.models import F, Case, When, Value, CharField, Q
 from django.conf import settings
+from tinymce.models import HTMLField
 
 # base_openai_model = "gpt-3.5-turbo-1106"
 # base_openai_model = "gpt-4" # on waitlist
@@ -36,6 +37,7 @@ class Property(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     name = models.CharField(max_length=255, unique=True)
+    notes = HTMLField(default="")
     pin = models.URLField(max_length=255, null=True, blank=True)
 
     class Meta:

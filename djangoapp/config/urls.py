@@ -22,6 +22,7 @@ from iosl.views import script_view
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", script_view, name="scripts"),
+    path("tinymce/", include("tinymce.urls")),
 ]
 
 admin.site.site_header = "IOSL Database"
