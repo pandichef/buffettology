@@ -25,7 +25,7 @@ urlpatterns = [
     path("tinymce/", include("tinymce.urls")),
 ]
 
-admin.site.site_header = "IOSL Database"
-admin.site.site_title = "IOSL"
+admin.site.site_header = "Diligence Database"
+admin.site.site_title = "Diligence"
 admin.site.index_title = "Members Only"
 # admin.site.site_url = os.environ["CHATPR_SITE_URL"]
