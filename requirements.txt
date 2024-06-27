@@ -24,3 +24,4 @@ whoosh==2.7.4
 mysqlclient==2.1.0
 python-dotenv==1.0.0
 django-tinymce==4.1.0
+pyarrow==13.0.0

@@ -117,7 +117,7 @@ class Stock(models.Model):
         # get price
         try:
             sip_file_path = os.path.join(
-                settings.MEDIA_ROOT, datetime.now().strftime("%Y%m%d") + ".pkl"
+                settings.MEDIA_ROOT, datetime.now().strftime("%Y%m%d") + ".parquet"
             )
             sip_df = pd.read_pickle(sip_file_path)
             if not self.psd_price:
