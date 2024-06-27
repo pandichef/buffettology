@@ -119,8 +119,8 @@ if gdfs:
     # merged_csv_path = os.path.join(base_dir, "merged_data.csv")
     # merged_df.to_csv("merged_data.csv", index=False)
     merged_df.set_index("ci_ticker", inplace=True)
-    merged_df.to_pickle("merged_data.pkl")
+    merged_df.to_parquet("merged_data.parquet")
     # merged_df.to_parquet("merged_data.parquet", index=False)
-    print(f"Saved merged data to pickle file")
+    print(f"Saved merged data to parquet file")
 else:
     print("No GeoDataFrames were successfully read. Check your file paths and data.")

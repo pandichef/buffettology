@@ -119,7 +119,7 @@ class Stock(models.Model):
             sip_file_path = os.path.join(
                 settings.MEDIA_ROOT, datetime.now().strftime("%Y%m%d") + ".parquet"
             )
-            sip_df = pd.read_pickle(sip_file_path)
+            sip_df = pd.read_parquet(sip_file_path)
             if not self.psd_price:
                 self.psd_price = float(sip_df["psd_price"][self.ticker])
         except:
