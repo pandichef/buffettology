@@ -3,6 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from .models import (
     # CustomUser,
     Stock,
+    SIPFlatFile,
 )  # Import your model here
 from django.db.models import Q
 from django.urls import path, include
@@ -12,10 +13,15 @@ from openai import OpenAI, BadRequestError
 from django.utils.html import format_html
 
 
+class SIPFlatFileAdmin(admin.ModelAdmin):
+    pass
+
+
 class StockAdmin(admin.ModelAdmin):
     list_display = (
         "created_at",
         "ticker",
+        "psd_price",
         # "fisher1_analysis",
         "fisher1",
         "fisher2",
@@ -34,7 +40,7 @@ class StockAdmin(admin.ModelAdmin):
         "fisher15",
         # "tmp123",
     )
-    search_fields = ("name",)
+    search_fields = ("ticker",)
     # model = Property
 
     # def map_url(self, obj):
@@ -45,3 +51,4 @@ class StockAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Stock, StockAdmin)
+admin.site.register(SIPFlatFile, SIPFlatFileAdmin)
