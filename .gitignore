@@ -154,3 +154,7 @@ ft-*/
 out/
 desktop.ini
 *.gsheet
+merged_data.*
+filemast.xlsx
+sip_dictionary.xlsx
+~$*.xlsx
