@@ -17,39 +17,6 @@ If the final answer is "Yes", then the response must end in the string "Conclusi
 If the final answer is "No", then the response must end in the string "Conclusion: No".
 Do not use any markdown text in the reponse."""
 
-# fisher1_prompt = """Does the company have
-# products or services with sufﬁcient market potential to make possible a
-# sizable increase in sales for at least several years?  In this analysis, consider
-# factors like market share, international growth, and cross-selling opportunities."""
-
-# fisher2_prompt = """Does the management have a
-# determination to continue to develop products or processes that will still
-# further increase total sales potentials when the growth potentials of currently
-# attractive product lines have largely been exploited?"""
-
-# fisher3_prompt = """How effective are the company’s
-# research and development efforts in relation to its size?"""
-# fisher4_prompt = """Does the company have an above-average sales organization?"""
-# fisher5_prompt = """Does the company have a worthwhile profit margin?"""
-# fisher6_prompt = """What is the company doing to maintain or improve profit margins?"""
-# fisher7_prompt = """Does the company have outstanding labor and personnel relations?"""
-# fisher8_prompt = """Does the company have outstanding executive relations?"""
-# fisher9_prompt = """Does the company have depth to its management?"""
-# fisher10_prompt = (
-#     """How good are the company’s cost analysis and accounting controls?"""
-# )
-# fisher11_prompt = """Are there other aspects of the business,
-# somewhat peculiar to the industry involved, which will give the investor important
-# clues as to how outstanding the company may be in relation to its competition?"""
-# fisher12_prompt = """Does the company have a short-range or long-range outlook in regard to profits?"""
-# fisher13_prompt = """In the foreseeable future will the
-# growth of the company require sufﬁcient equity ﬁnancing so that the larger number
-# of shares then outstanding will largely cancel the existing stockholders’ beneﬁt
-# from this anticipated growth?"""
-# fisher14_prompt = """Does the management talk freely to investors
-# about its affairs when things are going well but “clam up” when troubles and disappointments occur?"""
-# fisher15_prompt = """Does the company have a management of unquestionable integrity?"""
-
 fisher_prompts = [
     """Does the company have products or services with sufﬁcient market potential to make possible a sizable increase in sales for at least several years?  In this analysis, consider factors like market share, international growth, and cross-selling opportunities.""",
     """Does the management have a determination to continue to develop products or processes that will still further increase total sales potentials when the growth potentials of currently attractive product lines have largely been exploited?""",
@@ -195,24 +162,24 @@ def use_date_as_filename(instance, filename):
         return f"{new_filename}.{ext}"
 
 
-def validate_pickle_file(value):
+def validate_parquet_file(value):
     try:
-        # Read the file content and attempt to load it with pickle
+        # Read the file content and attempt to load it with pandas
         value.seek(0)  # Ensure we start reading from the beginning of the file
-        pickle.load(value)  # Will fail if not a valid pickle file
-    except (pickle.PickleError, EOFError, TypeError, ValueError):
-        raise ValidationError("This file is not a valid pickle file.")
+        pd.read_parquet(value)  # Will fail if not a valid Parquet file
+    except (ValueError, OSError) as e:
+        raise ValidationError("This file is not a valid Parquet file.") from e
 
     ext = os.path.splitext(value.name)[1]
-    if ext.lower() not in [".pkl"]:
+    if ext.lower() not in [".parquet"]:
         raise ValidationError(
-            f"Unsupported file extension. Only pickle files are allowed."
+            f"Unsupported file extension. Only Parquet files are allowed."
         )
 
 
 class SIPFlatFile(models.Model):
     file = models.FileField(
-        upload_to=use_date_as_filename, validators=[validate_pickle_file]
+        upload_to=use_date_as_filename, validators=[validate_parquet_file]
     )
 
     def __str__(self):

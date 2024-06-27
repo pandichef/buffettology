@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
                     "file",
                     models.FileField(
                         upload_to=stocks.models.use_date_as_filename,
-                        validators=[stocks.models.validate_pickle_file],
+                        validators=[stocks.models.validate_parquet_file],
                     ),
                 ),
             ],
