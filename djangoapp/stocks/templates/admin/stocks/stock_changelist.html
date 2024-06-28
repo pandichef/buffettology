@@ -1,0 +1,13 @@
+<!-- templates/admin/your_app/stock_changelist.html -->
+{% extends "admin/change_list.html" %}
+
+{% block content %}
+  <div>
+    <form method="post" action="">
+      {% csrf_token %}
+      <input type="submit" value="Bulk Add">
+      {{ form.as_p }}
+    </form>
+  </div>
+  {{ block.super }}
+{% endblock %}

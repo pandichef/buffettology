@@ -158,3 +158,4 @@ merged_data.*
 filemast.xlsx
 sip_dictionary.xlsx
 ~$*.xlsx
+*.ipynb

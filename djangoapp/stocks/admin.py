@@ -11,6 +11,30 @@ from django.http import HttpResponseRedirect
 from django.db.models import F, Case, When, Value, CharField, Q
 from openai import OpenAI, BadRequestError
 from django.utils.html import format_html
+from django.shortcuts import render
+from django import forms
+
+
+# forms.py
+from django import forms
+
+
+class BulkCreateForm(forms.Form):
+    tickers = forms.CharField(
+        label="",
+        widget=forms.Textarea(
+            attrs={
+                "placeholder": "To bulk add stocks, enter comma-separated tickers",
+                "rows": 1,
+                "cols": 40,
+                "style": "width: 80%;",
+            }
+        ),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["tickers"].label = False  # Remove the default label rendering
 
 
 class SIPFlatFileAdmin(admin.ModelAdmin):
@@ -18,6 +42,34 @@ class SIPFlatFileAdmin(admin.ModelAdmin):
 
 
 class StockAdmin(admin.ModelAdmin):
+    change_list_template = "admin/stocks/stock_changelist.html"
+
+    def has_add_permission(self, request):
+        # Disable the 'Add' button for all users
+        # use bulk create button instead
+        return False
+
+    def changelist_view(self, request, extra_context=None):
+        form = BulkCreateForm()
+        if request.method == "POST":
+            form = BulkCreateForm(request.POST)
+            if form.is_valid():
+                tickers = form.cleaned_data["tickers"]
+                ticker_list = [ticker.strip() for ticker in tickers.split(",")]
+
+                # Create Stock instances using Stock.objects.create()
+                created_objects = []
+                for ticker in ticker_list:
+                    stock = Stock.objects.create(ticker=ticker)
+                    created_objects.append(stock)
+
+                self.message_user(request, "Objects created successfully!")
+                return HttpResponseRedirect(request.path)
+
+        extra_context = extra_context or {}
+        extra_context["form"] = form
+        return super().changelist_view(request, extra_context=extra_context)
+
     list_display = (
         "created_at",
         "ticker",

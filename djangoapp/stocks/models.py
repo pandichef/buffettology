@@ -18,7 +18,7 @@ If the final answer is "No", then the response must end in the string "Conclusio
 Do not use any markdown text in the reponse."""
 
 fisher_prompts = [
-    """Does the company have products or services with sufﬁcient market potential to make possible a sizable increase in sales for at least several years?  In this analysis, consider factors like market share, international growth, and cross-selling opportunities.""",
+    """Does the company have products or services with sufﬁcient market potential to make possible a sizable increase in sales for at least several years?  In this analysis, consider factors like market share, international growth, and cross-selling opportunities?""",
     """Does the management have a determination to continue to develop products or processes that will still further increase total sales potentials when the growth potentials of currently attractive product lines have largely been exploited?""",
     """How effective are the company’s research and development efforts in relation to its size?""",
     """Does the company have an above-average sales organization?""",
@@ -129,7 +129,8 @@ class Stock(models.Model):
         def process_fisher(i):
             analysis_field = f"fisher{i}_analysis"
             fisher_field = f"fisher{i}"
-            if getattr(self, analysis_field) == "":
+            # print(getattr(self, analysis_field))
+            if not getattr(self, analysis_field):
                 analysis = fetch_llm_completion(
                     f"For ticker {self.ticker}, {fisher_prompts[i-1]}"
                 )
@@ -150,6 +151,7 @@ class Stock(models.Model):
         return f"{str(self.ticker)}"
 
 
+########################################################################################
 def use_date_as_filename(instance, filename):
     try:
         original_filename = ".".join(filename.split(".")[0:-1])
