@@ -75,6 +75,13 @@ class StockAdmin(admin.ModelAdmin):
         "ticker",
         "psd_price",
         # "fisher1_analysis",
+        "eps_estimate_y10",
+        # "ee_eps_ey0",
+        "price_in_y10",
+        "long_term_irr",
+        # "true_count",
+        # "not_null_count",
+        "pr_downside",
         "fisher1",
         "fisher2",
         "fisher3",
@@ -93,13 +100,32 @@ class StockAdmin(admin.ModelAdmin):
         # "tmp123",
     )
     search_fields = ("ticker",)
+
+    # def get_queryset(self, request):
+    #     return Stock.objects.get_queryset_with_annotations()
+
     # model = Property
+    def price_in_y10(self, obj):
+        return obj.price_in_y10
+
+    def long_term_irr(self, obj):
+        return obj.long_term_irr
+
+    # def true_count(self, obj):
+    # return obj.true_count
+
+    # def not_null_count(self, obj):
+    # return obj.not_null_count
+    def pr_downside(self, obj):
+        return obj.pr_downside
 
     # def map_url(self, obj):
     #     if obj.pin:
     #         return format_html('<a href="{}" target="_blank">{}</a>', obj.pin, obj.pin)
     #     else:
     #         return ""
+    # def get_queryset(self, request):
+    #     return Stock.objects.get_queryset()
 
 
 admin.site.register(Stock, StockAdmin)

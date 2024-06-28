@@ -1,9 +1,20 @@
 from django.db import models
-from django.db.models import QuerySet
-from django.db.models import F, Case, When, Value, CharField, Q
+from django.db.models import QuerySet, Sum, Count, ExpressionWrapper
+from django.db.models import (
+    F,
+    Case,
+    When,
+    Value,
+    CharField,
+    Q,
+    FloatField,
+    DecimalField,
+)
+from django.db.models.functions import Round, Concat, Coalesce
 from django.conf import settings
 from tinymce.models import HTMLField
-from django.conf import settings
+
+# from django.conf import settings
 import os
 import pandas as pd
 from datetime import datetime
@@ -11,6 +22,7 @@ from django.core.exceptions import ValidationError
 import os
 import pickle
 import concurrent.futures
+from django.contrib import messages
 
 prompt_suffix_skeptical_boolean_result = """Be skeptical in your response.  
 If the final answer is "Yes", then the response must end in the string "Conclusion: Yes".  
@@ -46,10 +58,7 @@ def fetch_llm_completion(prompt):
             model=settings.BASE_OPENAI_MODEL,
             messages=[
                 {"role": "system", "content": settings.SYSTEM_CONTENT},
-                {
-                    "role": "user",
-                    "content": prompt + " " + prompt_suffix_skeptical_boolean_result,
-                },
+                {"role": "user", "content": prompt,},
             ],
         )
         return str(completion.choices[0].message.content)
@@ -59,10 +68,27 @@ def fetch_llm_completion(prompt):
 
 def get_analysis_boolean(analysis_text: str) -> bool | None:
     parsed_analysis_text = analysis_text.split()
-    if parsed_analysis_text[-2] == "Conclusion:" and parsed_analysis_text[-1] == "Yes":
+    if (
+        parsed_analysis_text[-2] == "Conclusion:"
+        and parsed_analysis_text[-1].rstrip(".") == "Yes"
+    ):
         return True
-    elif parsed_analysis_text[-2] == "Conclusion:" and parsed_analysis_text[-1] == "No":
+    elif (
+        parsed_analysis_text[-2] == "Conclusion:"
+        and parsed_analysis_text[-1].rstrip(".") == "No"
+    ):
         return False
+    else:
+        return None
+
+
+def get_analysis_float(analysis_text: str) -> float | None:
+    parsed_analysis_text = analysis_text.split()
+    if parsed_analysis_text[-2] == "Conclusion:":
+        try:
+            return float(parsed_analysis_text[-1].rstrip(".").lstrip("$"))
+        except:
+            return None
     else:
         return None
 
@@ -79,6 +105,18 @@ class Stock(models.Model):
         unique=False,
         verbose_name="Price",
     )
+    ee_eps_ey0 = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        unique=False,
+        verbose_name="EPS Est Y0",
+    )
+    eps_estimate_y10 = models.DecimalField(
+        blank=True, null=True, decimal_places=2, max_digits=10
+    )
+    eps_estimate_y10_analysis = HTMLField(blank=True, null=True)
     fisher1 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[0])
     fisher1_analysis = HTMLField(blank=True, null=True)
     fisher2 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[1])
@@ -110,11 +148,13 @@ class Stock(models.Model):
     fisher15 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[14])
     fisher15_analysis = HTMLField(blank=True, null=True)
 
-    def save(self, *args, **kwargs):
+    # from django.contrib import messages
+
+    def save(self, *args, request=None, **kwargs):
         if self.ticker:
             self.ticker = self.ticker.upper()
 
-        # get price
+        # get SIP data
         try:
             sip_file_path = os.path.join(
                 settings.MEDIA_ROOT, datetime.now().strftime("%Y%m%d") + ".parquet"
@@ -122,8 +162,25 @@ class Stock(models.Model):
             sip_df = pd.read_parquet(sip_file_path)
             if not self.psd_price:
                 self.psd_price = float(sip_df["psd_price"][self.ticker])
-        except:
-            pass
+            if not self.ee_eps_ey0:
+                self.ee_eps_ey0 = float(sip_df["ee_eps_ey0"][self.ticker])
+        except Exception as e:
+            if request is not None:
+                messages.error(
+                    request, f"An error occurred while processing the file: {e}"
+                )
+
+        self.eps_estimate_y10_analysis = fetch_llm_completion(
+            f"""
+For ticker {self.ticker}, {fisher_prompts[0]}.  
+Use this analysis to estimate the EPS of the company 10 years from now.
+Be skeptical in your response.  The response must end in a specific number.
+For example, if the EPS in year 10 is 2.999, then the response must end in the 
+string "Conclusion: 2.999".  Do not use any markdown text in the reponse and 
+do not end the response with a period character.
+"""
+        )
+        self.eps_estimate_y10 = get_analysis_float(self.eps_estimate_y10_analysis)
 
         # Use multithreading to process fisher analyses
         def process_fisher(i):
@@ -133,6 +190,8 @@ class Stock(models.Model):
             if not getattr(self, analysis_field):
                 analysis = fetch_llm_completion(
                     f"For ticker {self.ticker}, {fisher_prompts[i-1]}"
+                    + " "
+                    + prompt_suffix_skeptical_boolean_result
                 )
                 setattr(self, analysis_field, analysis)
                 setattr(self, fisher_field, get_analysis_boolean(analysis))
@@ -146,6 +205,60 @@ class Stock(models.Model):
                     print(f"Exception in thread: {e}")
 
         super().save(*args, **kwargs)
+
+    # pe_in_y10 = 20
+
+    class CustomManager(models.Manager):
+        def get_queryset(self):
+            fisher_field_list = [f"fisher{i}" for i in range(1, 16)]
+            return (
+                super()
+                .get_queryset()
+                .annotate(
+                    price_in_y10=Value(20) * F("eps_estimate_y10"),
+                    long_term_irr=Concat(
+                        Round(
+                            Value(100)
+                            * (
+                                (F("price_in_y10") / F("psd_price"))
+                                ** Value(0.10, output_field=DecimalField())
+                                - 1
+                            ),
+                            2,
+                        ),
+                        Value("%"),
+                        output_field=models.CharField(),
+                    ),
+                    true_count=Sum(
+                        sum(Coalesce(F(field), 0.0) for field in fisher_field_list),
+                        output_field=FloatField(),
+                    ),
+                    not_null_count=Sum(
+                        sum(
+                            Case(
+                                When(~Q(**{field: None}), then=Value(1)),
+                                default=Value(0),
+                                output_field=FloatField(),
+                            )
+                            for field in fisher_field_list
+                        ),
+                        output_field=FloatField(),
+                    ),
+                    pr_downside=Concat(
+                        Round(
+                            100 - Value(100) * F("true_count") / F("not_null_count"), 2,
+                        ),
+                        Value("%"),
+                        output_field=models.CharField(),
+                    ),
+                    # ExpressionWrapper(
+                    #     Value(100) * F("true_count") / F("not_null_count"),
+                    #     output_field=FloatField(),
+                    # ),
+                )
+            )
+
+    objects = CustomManager()
 
     def __str__(self):
         return f"{str(self.ticker)}"
