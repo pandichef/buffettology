@@ -82,6 +82,8 @@ class StockAdmin(admin.ModelAdmin):
         # "true_count",
         # "not_null_count",
         "pr_downside",
+        "default_prediction",
+        "combined_default_probability",
         "fisher1",
         "fisher2",
         "fisher3",
@@ -111,6 +113,8 @@ class StockAdmin(admin.ModelAdmin):
     def long_term_irr(self, obj):
         return obj.long_term_irr
 
+    long_term_irr.short_description = "LT IRR (%)"
+
     # def true_count(self, obj):
     # return obj.true_count
 
@@ -119,6 +123,12 @@ class StockAdmin(admin.ModelAdmin):
     def pr_downside(self, obj):
         return obj.pr_downside
 
+    pr_downside.short_description = "Qualitative PD (%)"
+
+    def combined_default_probability(self, obj):
+        return obj.combined_default_probability
+
+    combined_default_probability.short_description = "Combo PD (%)"
     # def map_url(self, obj):
     #     if obj.pin:
     #         return format_html('<a href="{}" target="_blank">{}</a>', obj.pin, obj.pin)

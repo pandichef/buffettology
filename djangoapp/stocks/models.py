@@ -113,10 +113,20 @@ class Stock(models.Model):
         unique=False,
         verbose_name="EPS Est Y0",
     )
+    default_prediction = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        unique=False,
+        verbose_name="Quant PD (%)",
+    )
     eps_estimate_y10 = models.DecimalField(
         blank=True, null=True, decimal_places=2, max_digits=10
     )
-    eps_estimate_y10_analysis = HTMLField(blank=True, null=True)
+    eps_estimate_y10_analysis = HTMLField(
+        blank=True, null=True, verbose_name="LLM EPS EST Y10"
+    )
     fisher1 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[0])
     fisher1_analysis = HTMLField(blank=True, null=True)
     fisher2 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[1])
@@ -164,6 +174,10 @@ class Stock(models.Model):
                 self.psd_price = float(sip_df["psd_price"][self.ticker])
             if not self.ee_eps_ey0:
                 self.ee_eps_ey0 = float(sip_df["ee_eps_ey0"][self.ticker])
+            if not self.default_prediction:
+                self.default_prediction = float(
+                    sip_df["default_prediction"][self.ticker]
+                )
         except Exception as e:
             if request is not None:
                 messages.error(
@@ -226,7 +240,7 @@ do not end the response with a period character.
                             ),
                             2,
                         ),
-                        Value("%"),
+                        Value(""),
                         output_field=models.CharField(),
                     ),
                     true_count=Sum(
@@ -244,11 +258,23 @@ do not end the response with a period character.
                         ),
                         output_field=FloatField(),
                     ),
+                    pr_downside_decimal=Round(
+                        100 - Value(100) * F("true_count") / F("not_null_count"), 2,
+                    ),
                     pr_downside=Concat(
-                        Round(
-                            100 - Value(100) * F("true_count") / F("not_null_count"), 2,
-                        ),
-                        Value("%"),
+                        F("pr_downside_decimal"),
+                        Value(""),
+                        output_field=models.CharField(),
+                    ),
+                    combined_default_probability_decimal=Round(
+                        Value(0.50)
+                        * (F("default_prediction") + F("pr_downside_decimal")),
+                        2,
+                        output_field=models.DecimalField(),
+                    ),
+                    combined_default_probability=Concat(
+                        F("combined_default_probability_decimal"),
+                        Value(""),
                         output_field=models.CharField(),
                     ),
                     # ExpressionWrapper(

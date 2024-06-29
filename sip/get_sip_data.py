@@ -46,6 +46,7 @@
 import os
 import geopandas as gpd
 import pandas as pd
+from probability_model import add_default_probability
 
 # Define the base directory path
 base_dir = os.getenv("SIP_DIR_PATH")
@@ -119,7 +120,10 @@ if gdfs:
     # merged_csv_path = os.path.join(base_dir, "merged_data.csv")
     # merged_df.to_csv("merged_data.csv", index=False)
     merged_df.set_index("ci_ticker", inplace=True)
-    merged_df.to_parquet("merged_data.parquet")
+
+    df_add_probability, result = add_default_probability(merged_df)
+    # df_add_probability.result = result
+    df_add_probability.to_parquet("merged_data.parquet")
     # merged_df.to_parquet("merged_data.parquet", index=False)
     print(f"Saved merged data to parquet file")
 else:
