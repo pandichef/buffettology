@@ -122,10 +122,14 @@ class Stock(models.Model):
         verbose_name="Quant PD (%)",
     )
     eps_estimate_y10 = models.DecimalField(
-        blank=True, null=True, decimal_places=2, max_digits=10
+        blank=True,
+        null=True,
+        decimal_places=2,
+        max_digits=10,
+        verbose_name="LLM EPS Est Y10",
     )
     eps_estimate_y10_analysis = HTMLField(
-        blank=True, null=True, verbose_name="LLM EPS EST Y10"
+        blank=True, null=True, verbose_name="LLM EPS Est Y10 Analysis"
     )
     fisher1 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[0])
     fisher1_analysis = HTMLField(blank=True, null=True)
