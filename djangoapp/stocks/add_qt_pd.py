@@ -1,9 +1,12 @@
 import pandas as pd
 import statsmodels.api as sm
 import numpy as np
+import io
+from contextlib import redirect_stdout
+from typing import Tuple
 
 
-def add_default_probability(df):
+def add_qt_pd(df: pd.DataFrame) -> Tuple[pd.DataFrame, str]:
     # df = pd.read_parquet("/django_media_dev/20240628.parquet")
 
     df["return_12m"] = 100.0 * (
@@ -51,11 +54,15 @@ def add_default_probability(df):
     result = logit_model.fit()
 
     # Print the summary of the logistic regression model
-    print(result.summary())
+    # print(result.summary())
+    with io.StringIO() as buf, redirect_stdout(buf):
+        print(result.summary())
+        qt_pd_regression_summary = buf.getvalue()
 
     # fit data
     X1 = sm.add_constant(df[covariates1])
-    df["default_prediction"] = result.predict(X1) * 100
-    df[["default_prediction", "rat_zscore_y1", "rat_zscore_y2"]].to_clipboard()
+    df["qt_pd"] = result.predict(X1) * 100
+    # df[["default_prediction", "rat_zscore_y1", "rat_zscore_y2"]].to_clipboard()
 
-    return df, result
+    # return df, "<pre>" + qt_pd_regression_summary + "</pre>"
+    return df, qt_pd_regression_summary

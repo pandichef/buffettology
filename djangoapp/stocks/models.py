@@ -340,10 +340,63 @@ def validate_parquet_file(value):
         )
 
 
+from .add_qt_pd import add_qt_pd
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+import io
+
+
 class SIPFlatFile(models.Model):
     file = models.FileField(
         upload_to=use_date_as_filename, validators=[validate_parquet_file]
     )
+    qt_pd_regression_summary = models.TextField(null=True, blank=True)
+    # qt_pd_regression_summary = HTMLField(null=True, blank=True)
 
     def __str__(self):
         return f"{str(self.file.name)}"
+
+    def save(self, *args, **kwargs):
+        # Check if the instance already exists in the database
+        if self.pk:
+            try:
+                old_file = SIPFlatFile.objects.get(pk=self.pk).file
+            except SIPFlatFile.DoesNotExist:
+                old_file = None
+
+            # If there's an old file and it's not the same as the new one, delete it
+            if old_file and self.file != old_file:
+                if os.path.isfile(old_file.path):
+                    os.remove(old_file.path)
+
+        # Process the new file
+        if self.file:
+            # Read the uploaded file into a pandas DataFrame using an in-memory buffer
+            self.file.seek(0)
+            buffer = io.BytesIO(self.file.read())
+            df = pd.read_parquet(buffer)
+
+            # Add the new column
+            df, self.qt_pd_regression_summary = add_qt_pd(df)
+
+            # Save the modified DataFrame to a new in-memory buffer
+            modified_buffer = io.BytesIO()
+            df.to_parquet(modified_buffer, index=False)
+            modified_buffer.seek(0)
+
+            # Save the new file content back to the file field
+            self.file.save(
+                os.path.basename(self.file.name),
+                ContentFile(modified_buffer.read()),
+                save=False,
+            )
+
+        # Save the new file
+        super(SIPFlatFile, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        # Delete the file from storage when the model is deleted
+        if self.file:
+            if os.path.isfile(self.file.path):
+                os.remove(self.file.path)
+        super(SIPFlatFile, self).delete(*args, **kwargs)

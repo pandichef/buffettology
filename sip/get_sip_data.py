@@ -121,8 +121,9 @@ if gdfs:
     # merged_df.to_csv("merged_data.csv", index=False)
     merged_df.set_index("ci_ticker", inplace=True)
 
-    df_add_probability, result = add_default_probability(merged_df)
+    # df_add_probability, result = add_default_probability(merged_df)
     # df_add_probability.result = result
+    df_add_probability = merged_df
     df_add_probability.to_parquet("merged_data.parquet")
     # merged_df.to_parquet("merged_data.parquet", index=False)
     print(f"Saved merged data to parquet file")

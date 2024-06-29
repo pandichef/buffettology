@@ -13,7 +13,7 @@ from openai import OpenAI, BadRequestError
 from django.utils.html import format_html
 from django.shortcuts import render
 from django import forms
-
+from django.utils.safestring import mark_safe
 
 # forms.py
 from django import forms
@@ -38,7 +38,17 @@ class BulkCreateForm(forms.Form):
 
 
 class SIPFlatFileAdmin(admin.ModelAdmin):
-    pass
+    # pass
+    readonly_fields = ["quantitative_pd_regression_summary"]
+    exclude = ["qt_pd_regression_summary"]
+
+    def quantitative_pd_regression_summary(self, obj):
+        return format_html(f"<pre>{obj.qt_pd_regression_summary}</pre>")
+
+    # qt_pd_regression_summary_format_html.long_description = "LT IRR (%)"
+
+    # qt_pd_regression_summary.short_description = "LT IRR (%)"
+    # get_qt_pd_regression_summary.allow_tags = True
 
 
 class StockAdmin(admin.ModelAdmin):
