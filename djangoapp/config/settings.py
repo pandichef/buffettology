@@ -93,7 +93,9 @@ WSGI_APPLICATION = "config.wsgi.application"
 if os.name == "posix":
     from dotenv import load_dotenv
 
-    load_dotenv()  # take environment variables from .env.
+    load_dotenv(
+        f"/home/{os.environ['USER']}/.env"
+    )  # take environment variables from .env.
     # DATABASES = {
     #     "default": {
     #         "ENGINE": "django.db.backends.sqlite3",
