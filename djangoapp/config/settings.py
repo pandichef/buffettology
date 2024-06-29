@@ -17,6 +17,8 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 
+ON_PYTHONANYWHERE = True if os.getenv("PYTHONANYWHERE_DOMAIN") else False
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
@@ -26,7 +28,8 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-if os.name == "posix":
+# if os.name == "posix":
+if ON_PYTHONANYWHERE:
     ALLOWED_HOSTS = [
         f"{os.environ['USER']}.pythonanywhere.com",
     ]
@@ -53,7 +56,7 @@ INSTALLED_APPS = [
     "stocks",
 ]
 
-if not os.name == "posix":
+if not ON_PYTHONANYWHERE:
     INSTALLED_APPS += ["django_extensions"]
 
 MIDDLEWARE = [
@@ -90,7 +93,8 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-if os.name == "posix":
+# if os.name == "posix":
+if ON_PYTHONANYWHERE:
     from dotenv import load_dotenv
 
     load_dotenv(
@@ -157,9 +161,10 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 MEDIA_URL = "media/"
-STATIC_ROOT = f"/home/{os.environ['USER']}/static"  # prod only
 
-if os.name == "posix":
+# if os.name == "posix":
+if ON_PYTHONANYWHERE:
+    STATIC_ROOT = f"/home/{os.environ['USER']}/static"  # prod only
     MEDIA_ROOT = f"/home/{os.environ['USER']}/media"  # prod only
 else:
     MEDIA_ROOT = "/django_media_dev"
