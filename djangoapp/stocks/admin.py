@@ -92,7 +92,7 @@ class StockAdmin(admin.ModelAdmin):
         # "true_count",
         # "not_null_count",
         "pr_downside",
-        "default_prediction",
+        "qt_pd",
         "combined_default_probability",
         "fisher1",
         "fisher2",

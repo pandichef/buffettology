@@ -113,7 +113,7 @@ class Stock(models.Model):
         unique=False,
         verbose_name="EPS Est Y0",
     )
-    default_prediction = models.DecimalField(
+    qt_pd = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         blank=True,
@@ -178,8 +178,13 @@ class Stock(models.Model):
                 settings.MEDIA_ROOT, datetime.now().strftime("%Y%m%d") + ".parquet"
             )
             sip_df = pd.read_parquet(sip_file_path)
+            # print(sip_df)
+            # print(sip_df["psd_price"][self.ticker])
+            # print("-----")
 
-            for field in ["psd_price", "ee_eps_ey0", "default_prediction"]:
+            for field in ["psd_price", "ee_eps_ey0", "qt_pd"]:
+                # print("888888")
+                # print(sip_df[field][self.ticker])
                 self.setattr_from_sip(field, sip_df)
             # self.setattr_from_sip("ee_eps_ey0", sip_df)
             # self.setattr_from_sip("default_prediction", sip_df)
@@ -206,8 +211,10 @@ class Stock(models.Model):
                     request, f"An error occurred while processing the file: {e}"
                 )
 
-        self.eps_estimate_y10_analysis = fetch_llm_completion(
-            f"""
+        if not self.eps_estimate_y10_analysis:
+            print("eps_estimate_y10_analysis")
+            self.eps_estimate_y10_analysis = fetch_llm_completion(
+                f"""
 For ticker {self.ticker}, {fisher_prompts[0]}.  
 Use this analysis to estimate the EPS of the company 10 years from now.
 Be skeptical in your response.  The response must end in a specific number.
@@ -215,8 +222,8 @@ For example, if the EPS in year 10 is 2.999, then the response must end in the
 string "Conclusion: 2.999".  Do not use any markdown text in the reponse and 
 do not end the response with a period character.
 """
-        )
-        self.eps_estimate_y10 = get_analysis_float(self.eps_estimate_y10_analysis)
+            )
+            self.eps_estimate_y10 = get_analysis_float(self.eps_estimate_y10_analysis)
 
         # Use multithreading to process fisher analyses
         def process_fisher(i):
@@ -224,6 +231,7 @@ do not end the response with a period character.
             fisher_field = f"fisher{i}"
             # print(getattr(self, analysis_field))
             if not getattr(self, analysis_field):
+                print("analysis_field")
                 analysis = fetch_llm_completion(
                     f"For ticker {self.ticker}, {fisher_prompts[i-1]}"
                     + " "
@@ -289,8 +297,7 @@ do not end the response with a period character.
                         output_field=models.CharField(),
                     ),
                     combined_default_probability_decimal=Round(
-                        Value(0.50)
-                        * (F("default_prediction") + F("pr_downside_decimal")),
+                        Value(0.50) * (F("qt_pd") + F("pr_downside_decimal")),
                         2,
                         output_field=models.DecimalField(),
                     ),
@@ -381,7 +388,7 @@ class SIPFlatFile(models.Model):
 
             # Save the modified DataFrame to a new in-memory buffer
             modified_buffer = io.BytesIO()
-            df.to_parquet(modified_buffer, index=False)
+            df.to_parquet(modified_buffer, index=True)
             modified_buffer.seek(0)
 
             # Save the new file content back to the file field
