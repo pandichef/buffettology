@@ -46,12 +46,15 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # local apps
-    "django_extensions",
+    # "django_extensions",
     "tinymce",
     "accounts",
     "iosl",
     "stocks",
 ]
+
+if os.name == "posix":
+    INSTALLED_APPS += ["django_extensions"]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
