@@ -28,7 +28,7 @@ DEBUG = True
 
 if os.name == "posix":
     ALLOWED_HOSTS = [
-        f"{os.environ['USERNAME']}.pythonanywhere.com",
+        f"{os.environ['USER']}.pythonanywhere.com",
     ]
 else:
     ALLOWED_HOSTS = [
@@ -103,10 +103,10 @@ if os.name == "posix":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.mysql",
-            "NAME": f"{os.environ['USERNAME']}$default",  # Database name
+            "NAME": f"{os.environ['USER']}$default",  # Database name
             "USER": os.environ["MYSQL_USERNAME"],
             "PASSWORD": os.environ["MYSQL_USER_PASSWORD"],
-            "HOST": f"{os.environ['USERNAME']}.mysql.pythonanywhere-services.com",  # Database host address
+            "HOST": f"{os.environ['USER']}.mysql.pythonanywhere-services.com",  # Database host address
             "PORT": "",  # Leave it empty for default MySQL port (3306)
         }
     }
@@ -155,10 +155,10 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 MEDIA_URL = "media/"
-STATIC_ROOT = f"/home/{os.environ['USERNAME']}/static"  # prod only
+STATIC_ROOT = f"/home/{os.environ['USER']}/static"  # prod only
 
 if os.name == "posix":
-    MEDIA_ROOT = f"/home/{os.environ['USERNAME']}/media"  # prod only
+    MEDIA_ROOT = f"/home/{os.environ['USER']}/media"  # prod only
 else:
     MEDIA_ROOT = "/django_media_dev"
 
