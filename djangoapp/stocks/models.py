@@ -163,6 +163,10 @@ class Stock(models.Model):
     fisher15_analysis = HTMLField(blank=True, null=True)
 
     # from django.contrib import messages
+    def setattr_from_sip(self, fieldname, df):
+        value = float(df[fieldname][self.ticker])
+        if not getattr(self, fieldname) and not pd.isnull(value):
+            setattr(self, fieldname, float(df[fieldname][self.ticker]))
 
     def save(self, *args, request=None, **kwargs):
         if self.ticker:
@@ -174,14 +178,28 @@ class Stock(models.Model):
                 settings.MEDIA_ROOT, datetime.now().strftime("%Y%m%d") + ".parquet"
             )
             sip_df = pd.read_parquet(sip_file_path)
-            if not self.psd_price:
-                self.psd_price = float(sip_df["psd_price"][self.ticker])
-            if not self.ee_eps_ey0:
-                self.ee_eps_ey0 = float(sip_df["ee_eps_ey0"][self.ticker])
-            if not self.default_prediction:
-                self.default_prediction = float(
-                    sip_df["default_prediction"][self.ticker]
-                )
+
+            for field in ["psd_price", "ee_eps_ey0", "default_prediction"]:
+                self.setattr_from_sip(field, sip_df)
+            # self.setattr_from_sip("ee_eps_ey0", sip_df)
+            # self.setattr_from_sip("default_prediction", sip_df)
+
+            # if not getattr(self, "psd_price"):
+            #     setattr(self, "psd_price", float(sip_df["psd_price"][self.ticker]))
+            # if not getattr(self, "ee_eps_ey0"):
+            #     setattr(self, "ee_eps_ey0", float(sip_df["ee_eps_ey0"][self.ticker]))
+            # if not getattr(self, "default_prediction"):
+            #     setattr(
+            #         self,
+            #         "default_prediction",
+            #         float(sip_df["default_prediction"][self.ticker]),
+            #     )
+            # if not self.ee_eps_ey0:
+            #     self.ee_eps_ey0 = float(sip_df["ee_eps_ey0"][self.ticker])
+            # if not self.default_prediction:
+            #     self.default_prediction = float(
+            #         sip_df["default_prediction"][self.ticker]
+            #     )
         except Exception as e:
             if request is not None:
                 messages.error(

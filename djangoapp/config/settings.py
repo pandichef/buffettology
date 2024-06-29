@@ -168,6 +168,10 @@ You are helpful assistant.
 # """
 
 # MINIMUM_NUMBER_OF_EXAMPLES_PER_OPENAI_JOB = 10  # OpenAI API requires at least 10
-BASE_OPENAI_MODEL = "gpt-3.5-turbo"  # used for first fine tuning job
 # OPENAI_MODEL_OVERRIDE = None  # force this base model i.e., ignore fine-tuned models
 # """gpt-4-1106-preview"""
+
+
+# https://platform.openai.com/docs/models/
+# BASE_OPENAI_MODEL = "gpt-4o"
+BASE_OPENAI_MODEL = "gpt-3.5-turbo"  # used for first fine tuning job
