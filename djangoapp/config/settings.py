@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     "stocks",
 ]
 
-if os.name == "posix":
+if not os.name == "posix":
     INSTALLED_APPS += ["django_extensions"]
 
 MIDDLEWARE = [
