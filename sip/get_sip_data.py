@@ -46,7 +46,8 @@
 import os
 import geopandas as gpd
 import pandas as pd
-from probability_model import add_default_probability
+
+# from probability_model import add_default_probability
 
 # Define the base directory path
 base_dir = os.getenv("SIP_DIR_PATH")

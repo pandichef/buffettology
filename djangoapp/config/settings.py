@@ -190,5 +190,7 @@ You are helpful assistant.
 
 
 # https://platform.openai.com/docs/models/
-# BASE_OPENAI_MODEL = "gpt-4o"
-BASE_OPENAI_MODEL = "gpt-3.5-turbo"  # used for first fine tuning job
+if ON_PYTHONANYWHERE:
+    BASE_OPENAI_MODEL = "gpt-4o"
+else:
+    BASE_OPENAI_MODEL = "gpt-3.5-turbo"  # used for first fine tuning job
