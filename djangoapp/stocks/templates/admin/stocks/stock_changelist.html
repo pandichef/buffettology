@@ -5,7 +5,11 @@
   <div>
     <form method="post" action="">
       {% csrf_token %}
-      <input type="submit" value="Bulk Add">
+      <input type="submit" value="Add 5 More Leads"  name="value">
+    </form>
+    <form method="post" action="">
+      {% csrf_token %}
+      <input type="submit" value="Bulk Add" name="value">
       {{ form.as_p }}
     </form>
   </div>

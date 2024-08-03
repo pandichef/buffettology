@@ -1,3 +1,7 @@
+import os
+import pandas as pd
+from datetime import datetime
+from django.conf import settings
 from django.contrib import admin
 from django import forms
 from django.contrib.auth.admin import UserAdmin
@@ -55,20 +59,37 @@ class StockAdmin(admin.ModelAdmin):
 
     def changelist_view(self, request, extra_context=None):
         form = BulkCreateForm()
-        if request.method == "POST":
+        print(request.POST.get("value"))
+        if request.method == "POST" and request.POST.get("value") == "Bulk Add":
             form = BulkCreateForm(request.POST)
             if form.is_valid():
                 tickers = form.cleaned_data["tickers"]
                 ticker_list = [ticker.strip() for ticker in tickers.split(",")]
 
                 # Create Stock instances using Stock.objects.create()
-                created_objects = []
+                # created_objects = []
                 for ticker in ticker_list:
                     stock = Stock.objects.create(ticker=ticker)
-                    created_objects.append(stock)
+                    # created_objects.append(stock)
 
                 self.message_user(request, "Objects created successfully!")
                 return HttpResponseRedirect(request.path)
+        if request.method == "POST" and request.POST.get("value") == "Add 5 More Leads":
+
+            sip_file_path = os.path.join(
+                settings.MEDIA_ROOT, datetime.now().strftime("%Y%m%d") + ".parquet"
+            )
+            sip_df = pd.read_parquet(sip_file_path)
+            sip_df = sip_df.dropna(subset=["qt_pd"])
+            sip_df = sip_df.sort_values(by="qt_pd", ascending=True)
+            # sip_df.ticker.head()
+            ticker_list = list(sip_df.index)[0:5]
+            print("asdfsadf")
+            for ticker in ticker_list:
+                stock = Stock.objects.create(ticker=ticker)
+
+            self.message_user(request, ",".join(ticker_list))
+            return HttpResponseRedirect(request.path)
 
         extra_context = extra_context or {}
         extra_context["form"] = form
