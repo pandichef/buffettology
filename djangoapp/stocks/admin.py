@@ -1,23 +1,21 @@
 from django.contrib import admin
+from django import forms
 from django.contrib.auth.admin import UserAdmin
-from .models import (
-    # CustomUser,
-    Stock,
-    SIPFlatFile,
-)  # Import your model here
 from django.db.models import Q
 from django.urls import path, include
 from django.http import HttpResponseRedirect
 from django.db.models import F, Case, When, Value, CharField, Q
-from openai import OpenAI, BadRequestError
 from django.utils.html import format_html
 from django.shortcuts import render
 from django import forms
 from django.utils.safestring import mark_safe
 import markdown2
-
-# forms.py
-from django import forms
+from openai import OpenAI, BadRequestError
+from .models import (
+    # CustomUser,
+    Stock,
+    SIPFlatFile,
+)  # Import your model here
 
 
 class BulkCreateForm(forms.Form):
@@ -45,9 +43,6 @@ class SIPFlatFileAdmin(admin.ModelAdmin):
 
     def quantitative_pd_regression_summary(self, obj):
         return format_html(f"<pre>{obj.qt_pd_regression_summary}</pre>")
-
-
-# from django.db import models
 
 
 class StockAdmin(admin.ModelAdmin):
@@ -113,51 +108,43 @@ class StockAdmin(admin.ModelAdmin):
     search_fields = ("ticker",)
     exclude = ("id",)
 
+    ################
+    # MARKDOWN HACKS
     def get_fields(self, request, obj=None):
-        # Get all fields of the model
-        all_fields = [field.name for field in self.model._meta.fields] + ["pr_downside"]
-        # analysis_subset = [s for s in all_fields if s.endswith("_analysis")]
-        # updated_strings = [
-        #     s.replace("_completion", "_rendered") if s.endswith("_completion") else s
-        #     for s in all_fields
-        # ]
-        updated_strings = all_fields
+        # This is needed to preserve the ORDERING of markdown fields
+        all_fields = [field.name for field in self.model._meta.fields]
+        updated_strings = [
+            s.replace("_completion", "_rendered") if s.endswith("_completion") else s
+            for s in all_fields
+        ]
         return updated_strings
 
     def get_readonly_fields(self, request, obj=None):
+        # This is hacky; required because Django throws an error if non-editable fields
+        # are not in the readonly return value
+        non_editable_fields = ["id"] + [
+            field.name for field in self.model._meta.get_fields() if not field.editable
+        ]
         all_fields = self.get_fields(request, obj)
-        analysis_subset = (
-            [s for s in all_fields if s.endswith("_completion")]
-            + [
-                "created_at",
-                "updated_at",
-                "id",
-                "ticker",
-                "psd_price",
-                "ee_eps_ey0",
-                "qt_pd",
-                "eps_estimate_y10",
-            ]
-            + [f"fisher{i}_rendered" for i in range(1, 16)]
-            + ["eps_estimate_y10_rendered"]
-            + ["pr_downside"]
-        )
-        return analysis_subset
+        rendered_fields = [field for field in all_fields if field.endswith("_rendered")]
+        return non_editable_fields + rendered_fields
 
     for i in range(1, 16):
         func_code = f"""
-def fisher{i}_completion(self, obj):
+def fisher{i}_rendered(self, obj):
     if obj.fisher{i}_completion:
         return mark_safe(markdown2.markdown(obj.fisher{i}_completion))
     return ""
 """
         exec(func_code)
 
-    def eps_estimate_y10_completion(self, obj):
+    def eps_estimate_y10_rendered(self, obj):
         if obj.eps_estimate_y10_completion:
             return mark_safe(markdown2.markdown(obj.eps_estimate_y10_completion))
         return ""
 
+    ##################
+    # ANNOTATION HACKS
     def price_in_y10(self, obj):
         return obj.price_in_y10
 
