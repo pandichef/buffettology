@@ -46,38 +46,11 @@ class SIPFlatFileAdmin(admin.ModelAdmin):
     def quantitative_pd_regression_summary(self, obj):
         return format_html(f"<pre>{obj.qt_pd_regression_summary}</pre>")
 
-    # qt_pd_regression_summary_format_html.long_description = "LT IRR (%)"
 
-    # qt_pd_regression_summary.short_description = "LT IRR (%)"
-    # get_qt_pd_regression_summary.allow_tags = True
+# from django.db import models
 
 
-# from markdown2 import markdown
-
-
-# class StockAdminForm(forms.ModelForm):
-#     fisher1_analysis = forms.CharField(widget=forms.Textarea, required=False)
-
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         if self.instance and self.instance.pk:
-#             if "fisher1_analysis" in self.fields:
-#                 self.fields["fisher1_analysis"].widget.attrs["readonly"] = True
-#                 self.fields["fisher1_analysis"].initial = mark_safe(
-#                     markdown(self.instance.fisher1_analysis)
-#                 )
-
-#     class Meta:
-#         model = Stock
-#         fields = "__all__"
-
-
-from markdownx.admin import MarkdownxModelAdmin
-from markdownx.widgets import AdminMarkdownxWidget
-from django.db import models
-
-
-class StockAdmin(MarkdownxModelAdmin):
+class StockAdmin(admin.ModelAdmin):
     change_list_template = "admin/stocks/stock_changelist.html"
 
     def has_add_permission(self, request):
@@ -179,8 +152,8 @@ def fisher{i}_rendered(self, obj):
         exec(func_code)
 
     def eps_estimate_y10_rendered(self, obj):
-        if obj.eps_estimate_y10_analysis:
-            return mark_safe(markdown2.markdown(obj.eps_estimate_y10_analysis))
+        if obj.eps_estimate_y10_completion:
+            return mark_safe(markdown2.markdown(obj.eps_estimate_y10_completion))
         return ""
 
     def price_in_y10(self, obj):
