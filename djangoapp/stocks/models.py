@@ -28,7 +28,7 @@ import io
 import concurrent.futures
 from django.contrib import messages
 from .prompts import (
-    prompt_suffix_skeptical_boolean_result,
+    boolean_suffix,
     fisher_prompts,
     eps_estimate_y10_prompt,
 )
@@ -155,7 +155,7 @@ class Stock(models.Model):
                 analysis = fetch_llm_completion(
                     f"For ticker {self.ticker}, {fisher_prompts[i-1]}"
                     + " "
-                    + prompt_suffix_skeptical_boolean_result
+                    + boolean_suffix
                 )
                 setattr(self, analysis_field, analysis)
                 setattr(self, fisher_field, extract_completion_boolean(analysis))
@@ -251,7 +251,6 @@ class SIPFlatFile(models.Model):
         upload_to=use_date_as_filename, validators=[validate_parquet_file]
     )
     qt_pd_regression_summary = models.TextField(null=True, blank=True)
-    # qt_pd_regression_summary = HTMLField(null=True, blank=True)
 
     def __str__(self):
         return f"{str(self.file.name)}"

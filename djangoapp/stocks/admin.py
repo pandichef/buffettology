@@ -115,12 +115,13 @@ class StockAdmin(admin.ModelAdmin):
 
     def get_fields(self, request, obj=None):
         # Get all fields of the model
-        all_fields = [field.name for field in self.model._meta.fields]
+        all_fields = [field.name for field in self.model._meta.fields] + ["pr_downside"]
         # analysis_subset = [s for s in all_fields if s.endswith("_analysis")]
-        updated_strings = [
-            s.replace("_completion", "_rendered") if s.endswith("_completion") else s
-            for s in all_fields
-        ]
+        # updated_strings = [
+        #     s.replace("_completion", "_rendered") if s.endswith("_completion") else s
+        #     for s in all_fields
+        # ]
+        updated_strings = all_fields
         return updated_strings
 
     def get_readonly_fields(self, request, obj=None):
@@ -139,19 +140,20 @@ class StockAdmin(admin.ModelAdmin):
             ]
             + [f"fisher{i}_rendered" for i in range(1, 16)]
             + ["eps_estimate_y10_rendered"]
+            + ["pr_downside"]
         )
         return analysis_subset
 
     for i in range(1, 16):
         func_code = f"""
-def fisher{i}_rendered(self, obj):
+def fisher{i}_completion(self, obj):
     if obj.fisher{i}_completion:
         return mark_safe(markdown2.markdown(obj.fisher{i}_completion))
     return ""
 """
         exec(func_code)
 
-    def eps_estimate_y10_rendered(self, obj):
+    def eps_estimate_y10_completion(self, obj):
         if obj.eps_estimate_y10_completion:
             return mark_safe(markdown2.markdown(obj.eps_estimate_y10_completion))
         return ""

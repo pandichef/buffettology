@@ -1,8 +1,3 @@
-prompt_suffix_skeptical_boolean_result = """Be skeptical in your response.  
-If the final answer is "Yes", then the response must end in the string "Conclusion: Yes".  
-If the final answer is "No", then the response must end in the string "Conclusion: No".
-Do not use any markdown text in the reponse."""
-
 fisher_prompts = [
     """Does the company have products or services with sufﬁcient market potential to make possible a sizable increase in sales for at least several years?  In this analysis, consider factors like market share, international growth, and cross-selling opportunities?""",
     """Does the management have a determination to continue to develop products or processes that will still further increase total sales potentials when the growth potentials of currently attractive product lines have largely been exploited?""",
@@ -21,11 +16,23 @@ fisher_prompts = [
     """Does the company have a management of unquestionable integrity?""",
 ]
 
-eps_estimate_y10_prompt = """
-For ticker {ticker}, {fisher_prompt0}.  
-Use this analysis to estimate the EPS of the company 10 years from now.
+##########################################################################
+boolean_suffix = """Be skeptical in your response.  
+If the final answer is "Yes", then the response must end in the string "Conclusion: Yes".  
+If the final answer is "No", then the response must end in the string "Conclusion: No".
+Do not use any markdown text in the reponse."""
+
+float_suffix = """
 Be skeptical in your response.  The response must end in a specific number.
 For example, if the EPS in year 10 is 2.999, then the response must end in the 
 string "Conclusion: 2.999".  Do not use any markdown text in the reponse and 
 do not end the response with a period character.
 """
+
+eps_estimate_y10_prompt = (
+    """
+For ticker {ticker}, {fisher_prompt0}.  
+Use this analysis to estimate the EPS of the company 10 years from now.
+"""
+    + float_suffix
+)
