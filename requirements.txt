@@ -3,7 +3,8 @@ statsmodels==0.14.0
 django-tinymce==4.1.0
 python-dotenv==1.0.0
 pyarrow==13.0.0
-django-markdownx==4.0.7
+markdown2==2.5.0
+# django-markdownx==4.0.7
 
 # local only
 django-extensions

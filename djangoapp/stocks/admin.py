@@ -14,6 +14,7 @@ from django.utils.html import format_html
 from django.shortcuts import render
 from django import forms
 from django.utils.safestring import mark_safe
+import markdown2
 
 # forms.py
 from django import forms
@@ -77,9 +78,9 @@ from django.db import models
 
 
 class StockAdmin(MarkdownxModelAdmin):
-    formfield_overrides = {
-        models.TextField: {"widget": AdminMarkdownxWidget},
-    }
+    # formfield_overrides = {
+    #     models.TextField: {"widget": AdminMarkdownxWidget},
+    # }
     # form = StockAdminForm
     change_list_template = "admin/stocks/stock_changelist.html"
 
@@ -145,23 +146,60 @@ class StockAdmin(MarkdownxModelAdmin):
     # readonly_fields = ("eps_estimate_y10_analysis",)
     # editable_fields = self.get_fields()
 
+    # def get_markdown_fields(self):
+    #     all_fields = [field.name for field in self.model._meta.fields]
+    #     analysis_subset = [s for s in all_fields if s.endswith("_analysis")]
+    #     return analysis_subset
+
     def get_fields(self, request, obj=None):
         # Get all fields of the model
-        return [field.name for field in self.model._meta.fields]
+        all_fields = [field.name for field in self.model._meta.fields]
+        # analysis_subset = [s for s in all_fields if s.endswith("_analysis")]
+        updated_strings = [
+            s.replace("_analysis", "_rendered") if s.endswith("_analysis") else s
+            for s in all_fields
+        ]
+        return updated_strings
 
     def get_readonly_fields(self, request, obj=None):
         all_fields = self.get_fields(request, obj)
-        analysis_subset = [s for s in all_fields if s.endswith("_analysis")] + [
-            "created_at",
-            "updated_at",
-            "id",
-            "ticker",
-            "psd_price",
-            "ee_eps_ey0",
-            "qt_pd",
-            "eps_estimate_y10",
-        ]
+        analysis_subset = (
+            [s for s in all_fields if s.endswith("_analysis")]
+            + [
+                "created_at",
+                "updated_at",
+                "id",
+                "ticker",
+                "psd_price",
+                "ee_eps_ey0",
+                "qt_pd",
+                "eps_estimate_y10",
+            ]
+            + [f"fisher{i}_rendered" for i in range(1, 16)]
+            + ["eps_estimate_y10_rendered"]
+        )
         return analysis_subset
+
+    for i in range(1, 16):
+        func_code = f"""
+def fisher{i}_rendered(self, obj):
+    if obj.fisher{i}_analysis:
+        return mark_safe(markdown2.markdown(obj.fisher{i}_analysis))
+    return ""
+"""
+        exec(func_code)
+
+    def eps_estimate_y10_rendered(self, obj):
+        if obj.eps_estimate_y10_analysis:
+            return mark_safe(markdown2.markdown(obj.eps_estimate_y10_analysis))
+        return ""
+
+    # def formfield_for_dbfield(self, db_field, request, **kwargs):
+    #     if db_field.name == "fisher1_analysis":
+    #         kwargs[
+    #             "widget"
+    #         ] = admin.widgets.AdminTextWidget()  # Default widget for editing
+    #     return super().formfield_for_dbfield(db_field, request, **kwargs)
 
     # def get_queryset(self, request):
     #     return Stock.objects.get_queryset_with_annotations()
