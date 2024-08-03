@@ -14,7 +14,8 @@ from django.db.models import (
 from django.db.models.functions import Round, Concat, Coalesce
 from django.conf import settings
 from tinymce.models import HTMLField
-from markdownx.models import MarkdownxField
+
+# from markdownx.models import MarkdownxField
 
 # from django.conf import settings
 import os
@@ -131,39 +132,39 @@ class Stock(models.Model):
         max_digits=10,
         verbose_name="LLM EPS Est Y10",
     )
-    eps_estimate_y10_analysis = MarkdownxField(
+    eps_estimate_y10_analysis = TextField(
         blank=True, null=True, verbose_name="LLM EPS Est Y10 Analysis"
     )
     fisher1 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[0])
-    fisher1_analysis = MarkdownxField(blank=True, null=True)
+    fisher1_analysis = TextField(blank=True, null=True)
     fisher2 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[1])
-    fisher2_analysis = MarkdownxField(blank=True, null=True)
+    fisher2_analysis = TextField(blank=True, null=True)
     fisher3 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[2])
-    fisher3_analysis = MarkdownxField(blank=True, null=True)
+    fisher3_analysis = TextField(blank=True, null=True)
     fisher4 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[3])
-    fisher4_analysis = MarkdownxField(blank=True, null=True)
+    fisher4_analysis = TextField(blank=True, null=True)
     fisher5 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[4])
-    fisher5_analysis = MarkdownxField(blank=True, null=True)
+    fisher5_analysis = TextField(blank=True, null=True)
     fisher6 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[5])
-    fisher6_analysis = MarkdownxField(blank=True, null=True)
+    fisher6_analysis = TextField(blank=True, null=True)
     fisher7 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[6])
-    fisher7_analysis = MarkdownxField(blank=True, null=True)
+    fisher7_analysis = TextField(blank=True, null=True)
     fisher8 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[7])
-    fisher8_analysis = MarkdownxField(blank=True, null=True)
+    fisher8_analysis = TextField(blank=True, null=True)
     fisher9 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[8])
-    fisher9_analysis = MarkdownxField(blank=True, null=True)
+    fisher9_analysis = TextField(blank=True, null=True)
     fisher10 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[9])
-    fisher10_analysis = MarkdownxField(blank=True, null=True)
+    fisher10_analysis = TextField(blank=True, null=True)
     fisher11 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[10])
-    fisher11_analysis = MarkdownxField(blank=True, null=True)
+    fisher11_analysis = TextField(blank=True, null=True)
     fisher12 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[11])
-    fisher12_analysis = MarkdownxField(blank=True, null=True)
+    fisher12_analysis = TextField(blank=True, null=True)
     fisher13 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[12])
-    fisher13_analysis = MarkdownxField(blank=True, null=True)
+    fisher13_analysis = TextField(blank=True, null=True)
     fisher14 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[13])
-    fisher14_analysis = MarkdownxField(blank=True, null=True)
+    fisher14_analysis = TextField(blank=True, null=True)
     fisher15 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[14])
-    fisher15_analysis = MarkdownxField(blank=True, null=True)
+    fisher15_analysis = TextField(blank=True, null=True)
 
     # from django.contrib import messages
     def setattr_from_sip(self, fieldname, df):
