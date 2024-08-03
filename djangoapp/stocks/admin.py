@@ -78,10 +78,6 @@ from django.db import models
 
 
 class StockAdmin(MarkdownxModelAdmin):
-    # formfield_overrides = {
-    #     models.TextField: {"widget": AdminMarkdownxWidget},
-    # }
-    # form = StockAdminForm
     change_list_template = "admin/stocks/stock_changelist.html"
 
     def has_add_permission(self, request):
@@ -143,20 +139,13 @@ class StockAdmin(MarkdownxModelAdmin):
     )
     search_fields = ("ticker",)
     exclude = ("id",)
-    # readonly_fields = ("eps_estimate_y10_analysis",)
-    # editable_fields = self.get_fields()
-
-    # def get_markdown_fields(self):
-    #     all_fields = [field.name for field in self.model._meta.fields]
-    #     analysis_subset = [s for s in all_fields if s.endswith("_analysis")]
-    #     return analysis_subset
 
     def get_fields(self, request, obj=None):
         # Get all fields of the model
         all_fields = [field.name for field in self.model._meta.fields]
         # analysis_subset = [s for s in all_fields if s.endswith("_analysis")]
         updated_strings = [
-            s.replace("_analysis", "_rendered") if s.endswith("_analysis") else s
+            s.replace("_completion", "_rendered") if s.endswith("_completion") else s
             for s in all_fields
         ]
         return updated_strings
@@ -164,7 +153,7 @@ class StockAdmin(MarkdownxModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         all_fields = self.get_fields(request, obj)
         analysis_subset = (
-            [s for s in all_fields if s.endswith("_analysis")]
+            [s for s in all_fields if s.endswith("_completion")]
             + [
                 "created_at",
                 "updated_at",
@@ -183,8 +172,8 @@ class StockAdmin(MarkdownxModelAdmin):
     for i in range(1, 16):
         func_code = f"""
 def fisher{i}_rendered(self, obj):
-    if obj.fisher{i}_analysis:
-        return mark_safe(markdown2.markdown(obj.fisher{i}_analysis))
+    if obj.fisher{i}_completion:
+        return mark_safe(markdown2.markdown(obj.fisher{i}_completion))
     return ""
 """
         exec(func_code)
@@ -194,17 +183,6 @@ def fisher{i}_rendered(self, obj):
             return mark_safe(markdown2.markdown(obj.eps_estimate_y10_analysis))
         return ""
 
-    # def formfield_for_dbfield(self, db_field, request, **kwargs):
-    #     if db_field.name == "fisher1_analysis":
-    #         kwargs[
-    #             "widget"
-    #         ] = admin.widgets.AdminTextWidget()  # Default widget for editing
-    #     return super().formfield_for_dbfield(db_field, request, **kwargs)
-
-    # def get_queryset(self, request):
-    #     return Stock.objects.get_queryset_with_annotations()
-
-    # model = Property
     def price_in_y10(self, obj):
         return obj.price_in_y10
 
@@ -213,11 +191,6 @@ def fisher{i}_rendered(self, obj):
 
     long_term_irr.short_description = "LT IRR (%)"
 
-    # def true_count(self, obj):
-    # return obj.true_count
-
-    # def not_null_count(self, obj):
-    # return obj.not_null_count
     def pr_downside(self, obj):
         return obj.pr_downside
 
@@ -227,13 +200,6 @@ def fisher{i}_rendered(self, obj):
         return obj.combined_default_probability
 
     combined_default_probability.short_description = "Combo PD (%)"
-    # def map_url(self, obj):
-    #     if obj.pin:
-    #         return format_html('<a href="{}" target="_blank">{}</a>', obj.pin, obj.pin)
-    #     else:
-    #         return ""
-    # def get_queryset(self, request):
-    #     return Stock.objects.get_queryset()
 
 
 admin.site.register(Stock, StockAdmin)

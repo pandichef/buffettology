@@ -15,85 +15,29 @@ from django.db.models.functions import Round, Concat, Coalesce
 from django.conf import settings
 from tinymce.models import HTMLField
 
-# from markdownx.models import MarkdownxField
-
-# from django.conf import settings
 import os
 import pandas as pd
 from datetime import datetime
-from django.core.exceptions import ValidationError
 import os
 import pickle
+from .add_qt_pd import add_qt_pd
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+import io
+
 import concurrent.futures
 from django.contrib import messages
-
-prompt_suffix_skeptical_boolean_result = """Be skeptical in your response.  
-If the final answer is "Yes", then the response must end in the string "Conclusion: Yes".  
-If the final answer is "No", then the response must end in the string "Conclusion: No".
-Do not use any markdown text in the reponse."""
-
-fisher_prompts = [
-    """Does the company have products or services with sufﬁcient market potential to make possible a sizable increase in sales for at least several years?  In this analysis, consider factors like market share, international growth, and cross-selling opportunities?""",
-    """Does the management have a determination to continue to develop products or processes that will still further increase total sales potentials when the growth potentials of currently attractive product lines have largely been exploited?""",
-    """How effective are the company’s research and development efforts in relation to its size?""",
-    """Does the company have an above-average sales organization?""",
-    """Does the company have a worthwhile profit margin?""",
-    """What is the company doing to maintain or improve profit margins?""",
-    """Does the company have outstanding labor and personnel relations?""",
-    """Does the company have outstanding executive relations?""",
-    """Does the company have depth to its management?""",
-    """How good are the company’s cost analysis and accounting controls?""",
-    """Are there other aspects of the business, somewhat peculiar to the industry involved, which will give the investor important clues as to how outstanding the company may be in relation to its competition?""",
-    """Does the company have a short-range or long-range outlook in regard to profits?""",
-    """In the foreseeable future will the growth of the company require sufﬁcient equity ﬁnancing so that the larger number of shares then outstanding will largely cancel the existing stockholders’ beneﬁt from this anticipated growth?""",
-    """Does the management talk freely to investors about its affairs when things are going well but “clam up” when troubles and disappointments occur?""",
-    """Does the company have a management of unquestionable integrity?""",
-]
-
-
-def fetch_llm_completion(prompt):
-    try:
-        from openai import OpenAI
-
-        client = OpenAI()
-
-        completion = client.chat.completions.create(
-            model=settings.BASE_OPENAI_MODEL,
-            messages=[
-                {"role": "system", "content": settings.SYSTEM_CONTENT},
-                {"role": "user", "content": prompt,},
-            ],
-        )
-        return str(completion.choices[0].message.content)
-    except Exception as e:
-        return str(e)
-
-
-def get_analysis_boolean(analysis_text: str) -> bool | None:
-    parsed_analysis_text = analysis_text.split()
-    if (
-        parsed_analysis_text[-2] == "Conclusion:"
-        and parsed_analysis_text[-1].rstrip(".") == "Yes"
-    ):
-        return True
-    elif (
-        parsed_analysis_text[-2] == "Conclusion:"
-        and parsed_analysis_text[-1].rstrip(".") == "No"
-    ):
-        return False
-    else:
-        return None
-
-
-def get_analysis_float(analysis_text: str) -> float | None:
-    parsed_analysis_text = analysis_text.split()
-    if parsed_analysis_text[-2] == "Conclusion:":
-        try:
-            return float(parsed_analysis_text[-1].rstrip(".").lstrip("$"))
-        except:
-            return None
-    else:
-        return None
+from .prompts import (
+    prompt_suffix_skeptical_boolean_result,
+    fisher_prompts,
+    eps_estimate_y10_prompt,
+)
+from .llm_utils import (
+    fetch_llm_completion,
+    extract_completion_boolean,
+    extract_completion_float,
+)
+from .validators import validate_parquet_file
 
 
 class Stock(models.Model):
@@ -132,39 +76,39 @@ class Stock(models.Model):
         max_digits=10,
         verbose_name="LLM EPS Est Y10",
     )
-    eps_estimate_y10_analysis = TextField(
+    eps_estimate_y10_completion = TextField(
         blank=True, null=True, verbose_name="LLM EPS Est Y10 Analysis"
     )
     fisher1 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[0])
-    fisher1_analysis = TextField(blank=True, null=True)
+    fisher1_completion = TextField(blank=True, null=True)
     fisher2 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[1])
-    fisher2_analysis = TextField(blank=True, null=True)
+    fisher2_completion = TextField(blank=True, null=True)
     fisher3 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[2])
-    fisher3_analysis = TextField(blank=True, null=True)
+    fisher3_completion = TextField(blank=True, null=True)
     fisher4 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[3])
-    fisher4_analysis = TextField(blank=True, null=True)
+    fisher4_completion = TextField(blank=True, null=True)
     fisher5 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[4])
-    fisher5_analysis = TextField(blank=True, null=True)
+    fisher5_completion = TextField(blank=True, null=True)
     fisher6 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[5])
-    fisher6_analysis = TextField(blank=True, null=True)
+    fisher6_completion = TextField(blank=True, null=True)
     fisher7 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[6])
-    fisher7_analysis = TextField(blank=True, null=True)
+    fisher7_completion = TextField(blank=True, null=True)
     fisher8 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[7])
-    fisher8_analysis = TextField(blank=True, null=True)
+    fisher8_completion = TextField(blank=True, null=True)
     fisher9 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[8])
-    fisher9_analysis = TextField(blank=True, null=True)
+    fisher9_completion = TextField(blank=True, null=True)
     fisher10 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[9])
-    fisher10_analysis = TextField(blank=True, null=True)
+    fisher10_completion = TextField(blank=True, null=True)
     fisher11 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[10])
-    fisher11_analysis = TextField(blank=True, null=True)
+    fisher11_completion = TextField(blank=True, null=True)
     fisher12 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[11])
-    fisher12_analysis = TextField(blank=True, null=True)
+    fisher12_completion = TextField(blank=True, null=True)
     fisher13 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[12])
-    fisher13_analysis = TextField(blank=True, null=True)
+    fisher13_completion = TextField(blank=True, null=True)
     fisher14 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[13])
-    fisher14_analysis = TextField(blank=True, null=True)
+    fisher14_completion = TextField(blank=True, null=True)
     fisher15 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[14])
-    fisher15_analysis = TextField(blank=True, null=True)
+    fisher15_completion = TextField(blank=True, null=True)
 
     # from django.contrib import messages
     def setattr_from_sip(self, fieldname, df):
@@ -182,67 +126,39 @@ class Stock(models.Model):
                 settings.MEDIA_ROOT, datetime.now().strftime("%Y%m%d") + ".parquet"
             )
             sip_df = pd.read_parquet(sip_file_path)
-            # print(sip_df)
-            # print(sip_df["psd_price"][self.ticker])
-            # print("-----")
 
             for field in ["psd_price", "ee_eps_ey0", "qt_pd"]:
-                # print("888888")
-                # print(sip_df[field][self.ticker])
                 self.setattr_from_sip(field, sip_df)
-            # self.setattr_from_sip("ee_eps_ey0", sip_df)
-            # self.setattr_from_sip("default_prediction", sip_df)
-
-            # if not getattr(self, "psd_price"):
-            #     setattr(self, "psd_price", float(sip_df["psd_price"][self.ticker]))
-            # if not getattr(self, "ee_eps_ey0"):
-            #     setattr(self, "ee_eps_ey0", float(sip_df["ee_eps_ey0"][self.ticker]))
-            # if not getattr(self, "default_prediction"):
-            #     setattr(
-            #         self,
-            #         "default_prediction",
-            #         float(sip_df["default_prediction"][self.ticker]),
-            #     )
-            # if not self.ee_eps_ey0:
-            #     self.ee_eps_ey0 = float(sip_df["ee_eps_ey0"][self.ticker])
-            # if not self.default_prediction:
-            #     self.default_prediction = float(
-            #         sip_df["default_prediction"][self.ticker]
-            #     )
         except Exception as e:
             if request is not None:
                 messages.error(
                     request, f"An error occurred while processing the file: {e}"
                 )
 
-        if not self.eps_estimate_y10_analysis:
-            print("eps_estimate_y10_analysis")
-            self.eps_estimate_y10_analysis = fetch_llm_completion(
-                f"""
-For ticker {self.ticker}, {fisher_prompts[0]}.  
-Use this analysis to estimate the EPS of the company 10 years from now.
-Be skeptical in your response.  The response must end in a specific number.
-For example, if the EPS in year 10 is 2.999, then the response must end in the 
-string "Conclusion: 2.999".  Do not use any markdown text in the reponse and 
-do not end the response with a period character.
-"""
+        if not self.eps_estimate_y10_completion:
+            self.eps_estimate_y10_completion = fetch_llm_completion(
+                eps_estimate_y10_prompt.format(
+                    ticker=self.ticker, fisher_prompt0=fisher_prompts[0]
+                )
             )
-            self.eps_estimate_y10 = get_analysis_float(self.eps_estimate_y10_analysis)
+            self.eps_estimate_y10 = extract_completion_float(
+                self.eps_estimate_y10_completion
+            )
 
         # Use multithreading to process fisher analyses
         def process_fisher(i):
-            analysis_field = f"fisher{i}_analysis"
+            analysis_field = f"fisher{i}_completion"
             fisher_field = f"fisher{i}"
             # print(getattr(self, analysis_field))
             if not getattr(self, analysis_field):
-                print("analysis_field")
+                # print("analysis_field")
                 analysis = fetch_llm_completion(
                     f"For ticker {self.ticker}, {fisher_prompts[i-1]}"
                     + " "
                     + prompt_suffix_skeptical_boolean_result
                 )
                 setattr(self, analysis_field, analysis)
-                setattr(self, fisher_field, get_analysis_boolean(analysis))
+                setattr(self, fisher_field, extract_completion_boolean(analysis))
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
             futures = [executor.submit(process_fisher, i) for i in range(1, 16)]
@@ -253,8 +169,6 @@ do not end the response with a period character.
                     print(f"Exception in thread: {e}")
 
         super().save(*args, **kwargs)
-
-    # pe_in_y10 = 20
 
     class CustomManager(models.Manager):
         def get_queryset(self):
@@ -310,10 +224,6 @@ do not end the response with a period character.
                         Value(""),
                         output_field=models.CharField(),
                     ),
-                    # ExpressionWrapper(
-                    #     Value(100) * F("true_count") / F("not_null_count"),
-                    #     output_field=FloatField(),
-                    # ),
                 )
             )
 
@@ -334,27 +244,6 @@ def use_date_as_filename(instance, filename):
         new_filename = datetime.now().strftime("%Y%m%d")
         ext = filename.split(".")[-1]
         return f"{new_filename}.{ext}"
-
-
-def validate_parquet_file(value):
-    try:
-        # Read the file content and attempt to load it with pandas
-        value.seek(0)  # Ensure we start reading from the beginning of the file
-        pd.read_parquet(value)  # Will fail if not a valid Parquet file
-    except (ValueError, OSError) as e:
-        raise ValidationError("This file is not a valid Parquet file.") from e
-
-    ext = os.path.splitext(value.name)[1]
-    if ext.lower() not in [".parquet"]:
-        raise ValidationError(
-            f"Unsupported file extension. Only Parquet files are allowed."
-        )
-
-
-from .add_qt_pd import add_qt_pd
-from django.core.files.base import ContentFile
-from django.core.files.storage import default_storage
-import io
 
 
 class SIPFlatFile(models.Model):
