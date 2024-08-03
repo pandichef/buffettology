@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # local apps
     # "django_extensions",
+    "markdownx",
     "tinymce",
     "accounts",
     "iosl",

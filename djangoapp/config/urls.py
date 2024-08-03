@@ -24,6 +24,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", script_view, name="scripts"),
     path("tinymce/", include("tinymce.urls")),
+    path("markdownx/", include("markdownx.urls")),
 ]
 
 admin.site.site_header = "Diligence Database"

@@ -51,7 +51,31 @@ class SIPFlatFileAdmin(admin.ModelAdmin):
     # get_qt_pd_regression_summary.allow_tags = True
 
 
-class StockAdmin(admin.ModelAdmin):
+# from markdown2 import markdown
+
+
+# class StockAdminForm(forms.ModelForm):
+#     fisher1_analysis = forms.CharField(widget=forms.Textarea, required=False)
+
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         if self.instance and self.instance.pk:
+#             if "fisher1_analysis" in self.fields:
+#                 self.fields["fisher1_analysis"].widget.attrs["readonly"] = True
+#                 self.fields["fisher1_analysis"].initial = mark_safe(
+#                     markdown(self.instance.fisher1_analysis)
+#                 )
+
+#     class Meta:
+#         model = Stock
+#         fields = "__all__"
+
+
+from markdownx.admin import MarkdownxModelAdmin
+
+
+class StockAdmin(MarkdownxModelAdmin):
+    # form = StockAdminForm
     change_list_template = "admin/stocks/stock_changelist.html"
 
     def has_add_permission(self, request):
@@ -121,13 +145,7 @@ class StockAdmin(admin.ModelAdmin):
         return [field.name for field in self.model._meta.fields]
 
     def get_readonly_fields(self, request, obj=None):
-        # Get all fields of the model
         all_fields = self.get_fields(request, obj)
-        # Exclude the editable fields
-        # readonly_fields = [
-        #     field for field in all_fields if field not in self.get_fields
-        # ]
-        # print(all_fields)
         analysis_subset = [s for s in all_fields if s.endswith("_analysis")] + [
             "created_at",
             "updated_at",
