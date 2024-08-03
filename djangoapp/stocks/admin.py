@@ -112,6 +112,33 @@ class StockAdmin(admin.ModelAdmin):
         # "tmp123",
     )
     search_fields = ("ticker",)
+    exclude = ("id",)
+    # readonly_fields = ("eps_estimate_y10_analysis",)
+    # editable_fields = self.get_fields()
+
+    def get_fields(self, request, obj=None):
+        # Get all fields of the model
+        return [field.name for field in self.model._meta.fields]
+
+    def get_readonly_fields(self, request, obj=None):
+        # Get all fields of the model
+        all_fields = self.get_fields(request, obj)
+        # Exclude the editable fields
+        # readonly_fields = [
+        #     field for field in all_fields if field not in self.get_fields
+        # ]
+        # print(all_fields)
+        analysis_subset = [s for s in all_fields if s.endswith("_analysis")] + [
+            "created_at",
+            "updated_at",
+            "id",
+            "ticker",
+            "psd_price",
+            "ee_eps_ey0",
+            "qt_pd",
+            "eps_estimate_y10",
+        ]
+        return analysis_subset
 
     # def get_queryset(self, request):
     #     return Stock.objects.get_queryset_with_annotations()
