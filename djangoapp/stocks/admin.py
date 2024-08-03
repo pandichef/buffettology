@@ -72,9 +72,14 @@ class SIPFlatFileAdmin(admin.ModelAdmin):
 
 
 from markdownx.admin import MarkdownxModelAdmin
+from markdownx.widgets import AdminMarkdownxWidget
+from django.db import models
 
 
 class StockAdmin(MarkdownxModelAdmin):
+    formfield_overrides = {
+        models.TextField: {"widget": AdminMarkdownxWidget},
+    }
     # form = StockAdminForm
     change_list_template = "admin/stocks/stock_changelist.html"
 
