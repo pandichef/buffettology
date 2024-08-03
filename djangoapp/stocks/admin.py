@@ -75,21 +75,22 @@ class StockAdmin(admin.ModelAdmin):
                 self.message_user(request, "Objects created successfully!")
                 return HttpResponseRedirect(request.path)
         if request.method == "POST" and request.POST.get("value") == "Add 5 More Leads":
-
-            sip_file_path = os.path.join(
-                settings.MEDIA_ROOT, datetime.now().strftime("%Y%m%d") + ".parquet"
-            )
-            sip_df = pd.read_parquet(sip_file_path)
-            sip_df = sip_df.dropna(subset=["qt_pd"])
-            sip_df = sip_df.sort_values(by="qt_pd", ascending=True)
-            # sip_df.ticker.head()
-            ticker_list = list(sip_df.index)[0:5]
-            print("asdfsadf")
-            for ticker in ticker_list:
-                stock = Stock.objects.create(ticker=ticker)
-
-            self.message_user(request, ",".join(ticker_list))
-            return HttpResponseRedirect(request.path)
+            try:
+                sip_file_path = os.path.join(
+                    settings.MEDIA_ROOT, datetime.now().strftime("%Y%m%d") + ".parquet"
+                )
+                sip_df = pd.read_parquet(sip_file_path)
+                sip_df = sip_df.dropna(subset=["qt_pd"])
+                sip_df = sip_df.sort_values(by="qt_pd", ascending=True)
+                ticker_list = list(sip_df.index)[0:5]
+                for ticker in ticker_list:
+                    stock = Stock.objects.create(ticker=ticker)
+                self.message_user(request, ",".join(ticker_list))
+                return HttpResponseRedirect(request.path)
+            except Exception as e:
+                self.message_user(
+                    request, f"An error occurred while processing the file: {e}"
+                )
 
         extra_context = extra_context or {}
         extra_context["form"] = form
