@@ -127,7 +127,11 @@ class StockAdmin(admin.ModelAdmin):
         ]
         all_fields = self.get_fields(request, obj)
         rendered_fields = [field for field in all_fields if field.endswith("_rendered")]
-        return non_editable_fields + rendered_fields
+        return (
+            non_editable_fields
+            + rendered_fields
+            + ["ticker", "psd_price", "ee_eps_ey0", "qt_pd", "eps_estimate_y10",]
+        )
 
     for i in range(1, 16):
         func_code = f"""
