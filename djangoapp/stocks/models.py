@@ -139,9 +139,7 @@ class Stock(models.Model):
                 messages.error(
                     request, f"An error occurred while processing the file: {e}"
                 )
-                raise ValidationError(
-                    f"An error occurred while processing the file: {e}"
-                )
+            raise ValidationError(f"An error occurred while processing the file: {e}")
 
         if not self.eps_estimate_y10_completion:
             self.eps_estimate_y10_completion = fetch_llm_completion(
