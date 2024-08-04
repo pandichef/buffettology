@@ -125,23 +125,6 @@ class Stock(models.Model):
         if self.ticker:
             self.ticker = self.ticker.upper()
 
-        # get SIP data
-        try:
-            sip_file_path = os.path.join(
-                settings.MEDIA_ROOT, datetime.now().strftime("%Y%m%d") + ".parquet"
-            )
-            sip_df = pd.read_parquet(sip_file_path)
-
-            for field in ["psd_price", "ee_eps_ey0", "qt_pd"]:
-                self.setattr_from_sip(field, sip_df)
-        except Exception as e:
-            if request is not None:
-                messages.error(
-                    request, f"An error occurred while processing the file: {e}"
-                )
-            return None
-            # raise ValidationError(f"An error occurred while processing the file: {e}")
-
         if not self.eps_estimate_y10_completion:
             self.eps_estimate_y10_completion = fetch_llm_completion(
                 eps_estimate_y10_prompt.format(
@@ -175,16 +158,32 @@ class Stock(models.Model):
                 except Exception as e:
                     print(f"Exception in thread: {e}")
 
-        # sip_df = sip_df.rename(columns=sip_data_dictionary)
-        this_stock_data = sip_df.transpose()[[self.ticker]]
-        this_stock_data = this_stock_data.reset_index(drop=False)
-        this_stock_data = this_stock_data.rename(
-            columns={"index": "name", self.ticker: "value"}
-        )
-        this_stock_data["description"] = this_stock_data["name"].map(
-            sip_data_dictionary
-        )
-        self.google_sheet_url = create_google_sheet(self.ticker, this_stock_data)
+        # get SIP data
+        try:
+            sip_file_path = os.path.join(
+                settings.MEDIA_ROOT, datetime.now().strftime("%Y%m%d") + ".parquet"
+            )
+            sip_df = pd.read_parquet(sip_file_path)
+
+            for field in ["psd_price", "ee_eps_ey0", "qt_pd"]:
+                self.setattr_from_sip(field, sip_df)
+            # sip_df = sip_df.rename(columns=sip_data_dictionary)
+            this_stock_data = sip_df.transpose()[[self.ticker]]
+            this_stock_data = this_stock_data.reset_index(drop=False)
+            this_stock_data = this_stock_data.rename(
+                columns={"index": "name", self.ticker: "value"}
+            )
+            this_stock_data["description"] = this_stock_data["name"].map(
+                sip_data_dictionary
+            )
+            self.google_sheet_url = create_google_sheet(self.ticker, this_stock_data)
+        except Exception as e:
+            if request is not None:
+                messages.error(
+                    request, f"An error occurred while processing the file: {e}"
+                )
+            # return None
+            # raise ValidationError(f"An error occurred while processing the file: {e}")
 
         super().save(*args, **kwargs)
 

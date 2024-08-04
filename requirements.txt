@@ -5,6 +5,7 @@ python-dotenv==1.0.0
 pyarrow==13.0.0
 markdown2==2.5.0
 # django-markdownx==4.0.7
+pygsheets==2.0.6
 
 # local only
 django-extensions
