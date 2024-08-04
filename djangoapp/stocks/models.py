@@ -49,6 +49,9 @@ class Stock(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     ticker = models.CharField(max_length=7, unique=False)
+    ci_company = models.CharField(
+        max_length=100, unique=False, null=True, verbose_name="Company name"
+    )
     google_sheet_url = URLField(null=True)
     conclusion = HTMLField(blank=True, null=True)
     # psd_price = models.DecimalField(
@@ -85,42 +88,74 @@ class Stock(models.Model):
     eps_estimate_y10_completion = TextField(
         blank=True, null=True, verbose_name="LLM EPS Est Y10 Analysis"
     )
-    fisher1 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[0])
     fisher1_completion = TextField(blank=True, null=True)
-    fisher2 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[1])
+    fisher1 = models.BooleanField(
+        blank=True, null=True
+    )  # , help_text=fisher_prompts[0])
     fisher2_completion = TextField(blank=True, null=True)
-    fisher3 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[2])
+    fisher2 = models.BooleanField(
+        blank=True, null=True
+    )  # , , help_text=fisher_prompts[1])
     fisher3_completion = TextField(blank=True, null=True)
-    fisher4 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[3])
+    fisher3 = models.BooleanField(
+        blank=True, null=True
+    )  # , , help_text=fisher_prompts[2])
     fisher4_completion = TextField(blank=True, null=True)
-    fisher5 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[4])
+    fisher4 = models.BooleanField(
+        blank=True, null=True
+    )  # , , help_text=fisher_prompts[3])
     fisher5_completion = TextField(blank=True, null=True)
-    fisher6 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[5])
+    fisher5 = models.BooleanField(
+        blank=True, null=True
+    )  # , , help_text=fisher_prompts[4])
     fisher6_completion = TextField(blank=True, null=True)
-    fisher7 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[6])
+    fisher6 = models.BooleanField(
+        blank=True, null=True
+    )  # , , help_text=fisher_prompts[5])
     fisher7_completion = TextField(blank=True, null=True)
-    fisher8 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[7])
+    fisher7 = models.BooleanField(
+        blank=True, null=True
+    )  # , , help_text=fisher_prompts[6])
     fisher8_completion = TextField(blank=True, null=True)
-    fisher9 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[8])
+    fisher8 = models.BooleanField(
+        blank=True, null=True
+    )  # , , help_text=fisher_prompts[7])
     fisher9_completion = TextField(blank=True, null=True)
-    fisher10 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[9])
+    fisher9 = models.BooleanField(
+        blank=True, null=True
+    )  # , , help_text=fisher_prompts[8])
     fisher10_completion = TextField(blank=True, null=True)
-    fisher11 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[10])
+    fisher10 = models.BooleanField(
+        blank=True, null=True
+    )  # , , help_text=fisher_prompts[9])
     fisher11_completion = TextField(blank=True, null=True)
-    fisher12 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[11])
+    fisher11 = models.BooleanField(
+        blank=True, null=True
+    )  # , , help_text=fisher_prompts[10])
     fisher12_completion = TextField(blank=True, null=True)
-    fisher13 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[12])
+    fisher12 = models.BooleanField(
+        blank=True, null=True
+    )  # , , help_text=fisher_prompts[11])
     fisher13_completion = TextField(blank=True, null=True)
-    fisher14 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[13])
+    fisher13 = models.BooleanField(
+        blank=True, null=True
+    )  # , , help_text=fisher_prompts[12])
     fisher14_completion = TextField(blank=True, null=True)
-    fisher15 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[14])
+    fisher14 = models.BooleanField(
+        blank=True, null=True
+    )  # , , help_text=fisher_prompts[13])
     fisher15_completion = TextField(blank=True, null=True)
+    fisher15 = models.BooleanField(
+        blank=True, null=True
+    )  # , , help_text=fisher_prompts[14])
 
     def setattr_from_sip(self, fieldname, df):
-        # NO LONGER USED
-        value = float(df[fieldname][self.ticker])
+        try:
+            value = float(df[fieldname][self.ticker])
+        except:
+            value = df[fieldname][self.ticker]
         if not getattr(self, fieldname) and not pd.isnull(value):
-            setattr(self, fieldname, float(df[fieldname][self.ticker]))
+            setattr(self, fieldname, value)
 
     def save(self, *args, request=None, **kwargs):
         if self.ticker:
@@ -148,7 +183,13 @@ class Stock(models.Model):
                     + " "
                     + boolean_suffix
                 )
-                setattr(self, analysis_field, analysis)
+                setattr(
+                    self,
+                    analysis_field,
+                    fisher_prompts[i - 1]
+                    + f" \n#####{settings.BASE_OPENAI_MODEL} \n"
+                    + analysis,
+                )
                 setattr(self, fisher_field, extract_completion_boolean(analysis))
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -167,7 +208,8 @@ class Stock(models.Model):
             sip_df = get_current_sip_dataframe()
 
             # for field in ["psd_price", "ee_eps_ey0", "qt_pd"]:
-            #     self.setattr_from_sip(field, sip_df)
+            for field in ["ci_company"]:
+                self.setattr_from_sip(field, sip_df)
             # sip_df = sip_df.rename(columns=sip_data_dictionary)
             this_stock_data = sip_df.transpose()[[self.ticker]]
             this_stock_data = this_stock_data.reset_index(drop=False)
@@ -180,6 +222,7 @@ class Stock(models.Model):
             # self.google_sheet_url = create_google_sheet(self.ticker, this_stock_data)
             self.google_sheet_url = create_excel_sheet(self.ticker, this_stock_data)
         except Exception as e:
+            print(f"An error occurred while processing the file: {e}")
             if request is not None:
                 messages.error(
                     request, f"An error occurred while processing the file: {e}"

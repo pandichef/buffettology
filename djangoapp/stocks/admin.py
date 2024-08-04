@@ -163,11 +163,12 @@ class StockAdmin(admin.ModelAdmin):
             + rendered_fields
             + [
                 "ticker",
-                "psd_price",
-                "ee_eps_ey0",
-                "qt_pd",
+                # "psd_price",
+                # "ee_eps_ey0",
+                # "qt_pd",
                 "eps_estimate_y10",
                 "google_sheet",
+                "ci_company",
             ]
         )
 
