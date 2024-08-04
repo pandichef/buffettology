@@ -15,6 +15,7 @@ from django.db.models import (
 from django.db.models.functions import Round, Concat, Coalesce
 from django.conf import settings
 from tinymce.models import HTMLField
+from django.core.exceptions import ValidationError
 
 import os
 import pandas as pd
@@ -137,6 +138,9 @@ class Stock(models.Model):
             if request is not None:
                 messages.error(
                     request, f"An error occurred while processing the file: {e}"
+                )
+                raise ValidationError(
+                    f"An error occurred while processing the file: {e}"
                 )
 
         if not self.eps_estimate_y10_completion:
