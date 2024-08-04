@@ -5,7 +5,8 @@ python-dotenv==1.0.0
 pyarrow==13.0.0
 markdown2==2.5.0
 # django-markdownx==4.0.7
-pygsheets==2.0.6
+# pygsheets==2.0.6
+google-api-python-client==2.139.0
 
 # local only
 django-extensions

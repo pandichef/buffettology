@@ -40,7 +40,7 @@ from .llm_utils import (
     extract_completion_float,
 )
 from .validators import validate_parquet_file
-from .gsheet_utils import create_google_sheet
+from .gsheet_utils import create_google_sheet, create_excel_sheet
 from .sip_data_dictionary import sip_data_dictionary
 from stocks.screens.utils import get_current_sip_dataframe
 
@@ -177,7 +177,8 @@ class Stock(models.Model):
             this_stock_data["description"] = this_stock_data["name"].map(
                 sip_data_dictionary
             )
-            self.google_sheet_url = create_google_sheet(self.ticker, this_stock_data)
+            # self.google_sheet_url = create_google_sheet(self.ticker, this_stock_data)
+            self.google_sheet_url = create_excel_sheet(self.ticker, this_stock_data)
         except Exception as e:
             if request is not None:
                 messages.error(
