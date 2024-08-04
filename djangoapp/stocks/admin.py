@@ -99,17 +99,17 @@ class StockAdmin(admin.ModelAdmin):
     list_display = (
         "created_at",
         "ticker",
-        "psd_price",
+        # "psd_price",
         # "fisher1_analysis",
-        "ee_eps_ey0",
+        # "ee_eps_ey0",
         "eps_estimate_y10",
-        "price_in_y10",
-        "long_term_irr",
+        # "price_in_y10",
+        # "long_term_irr",
         # "true_count",
         # "not_null_count",
         "pr_downside",
-        "qt_pd",
-        "combined_default_probability",
+        # "qt_pd",
+        # "combined_default_probability",
         "fisher1",
         "fisher2",
         "fisher3",
@@ -187,13 +187,13 @@ def fisher{i}_rendered(self, obj):
 
     ##################
     # ANNOTATION HACKS
-    def price_in_y10(self, obj):
-        return obj.price_in_y10
+    # def price_in_y10(self, obj):
+    #     return obj.price_in_y10
 
-    def long_term_irr(self, obj):
-        return obj.long_term_irr
+    # def long_term_irr(self, obj):
+    #     return obj.long_term_irr
 
-    long_term_irr.short_description = "LT IRR (%)"
+    # long_term_irr.short_description = "LT IRR (%)"
 
     def pr_downside(self, obj):
         return obj.pr_downside
@@ -208,6 +208,7 @@ def fisher{i}_rendered(self, obj):
     #############
     # OTHER HACKS
     def google_sheet(self, obj):
+        # Because URLField text appears as raw text in readonly mode
         if obj.google_sheet_url:
             return format_html(
                 '<a href="{}" target="_blank">{}</a>',

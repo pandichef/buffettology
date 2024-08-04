@@ -51,30 +51,30 @@ class Stock(models.Model):
     ticker = models.CharField(max_length=7, unique=False)
     google_sheet_url = URLField(null=True)
     conclusion = HTMLField(blank=True, null=True)
-    psd_price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        blank=True,
-        null=True,
-        unique=False,
-        verbose_name="Price",
-    )
-    ee_eps_ey0 = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        blank=True,
-        null=True,
-        unique=False,
-        verbose_name="EPS Est Y0",
-    )
-    qt_pd = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        blank=True,
-        null=True,
-        unique=False,
-        verbose_name="Quant PD (%)",
-    )
+    # psd_price = models.DecimalField(
+    #     max_digits=10,
+    #     decimal_places=2,
+    #     blank=True,
+    #     null=True,
+    #     unique=False,
+    #     verbose_name="Price",
+    # )
+    # ee_eps_ey0 = models.DecimalField(
+    #     max_digits=10,
+    #     decimal_places=2,
+    #     blank=True,
+    #     null=True,
+    #     unique=False,
+    #     verbose_name="EPS Est Y0",
+    # )
+    # qt_pd = models.DecimalField(
+    #     max_digits=10,
+    #     decimal_places=2,
+    #     blank=True,
+    #     null=True,
+    #     unique=False,
+    #     verbose_name="Quant PD (%)",
+    # )
     eps_estimate_y10 = models.DecimalField(
         blank=True,
         null=True,
@@ -116,8 +116,8 @@ class Stock(models.Model):
     fisher15 = models.BooleanField(blank=True, null=True, help_text=fisher_prompts[14])
     fisher15_completion = TextField(blank=True, null=True)
 
-    # from django.contrib import messages
     def setattr_from_sip(self, fieldname, df):
+        # NO LONGER USED
         value = float(df[fieldname][self.ticker])
         if not getattr(self, fieldname) and not pd.isnull(value):
             setattr(self, fieldname, float(df[fieldname][self.ticker]))
@@ -166,8 +166,8 @@ class Stock(models.Model):
             # )
             sip_df = get_current_sip_dataframe()
 
-            for field in ["psd_price", "ee_eps_ey0", "qt_pd"]:
-                self.setattr_from_sip(field, sip_df)
+            # for field in ["psd_price", "ee_eps_ey0", "qt_pd"]:
+            #     self.setattr_from_sip(field, sip_df)
             # sip_df = sip_df.rename(columns=sip_data_dictionary)
             this_stock_data = sip_df.transpose()[[self.ticker]]
             this_stock_data = this_stock_data.reset_index(drop=False)
@@ -196,20 +196,20 @@ class Stock(models.Model):
                 super()
                 .get_queryset()
                 .annotate(
-                    price_in_y10=Value(20) * F("eps_estimate_y10"),
-                    long_term_irr=Concat(
-                        Round(
-                            Value(100)
-                            * (
-                                (F("price_in_y10") / F("psd_price"))
-                                ** Value(0.10, output_field=DecimalField())
-                                - 1
-                            ),
-                            2,
-                        ),
-                        Value(""),
-                        output_field=models.CharField(),
-                    ),
+                    # price_in_y10=Value(20) * F("eps_estimate_y10"),
+                    # long_term_irr=Concat(
+                    #     Round(
+                    #         Value(100)
+                    #         * (
+                    #             (F("price_in_y10") / F("psd_price"))
+                    #             ** Value(0.10, output_field=DecimalField())
+                    #             - 1
+                    #         ),
+                    #         2,
+                    #     ),
+                    #     Value(""),
+                    #     output_field=models.CharField(),
+                    # ),
                     true_count=Sum(
                         sum(Coalesce(F(field), 0.0) for field in fisher_field_list),
                         output_field=FloatField(),
@@ -233,16 +233,16 @@ class Stock(models.Model):
                         Value(""),
                         output_field=models.CharField(),
                     ),
-                    combined_default_probability_decimal=Round(
-                        Value(0.50) * (F("qt_pd") + F("pr_downside_decimal")),
-                        2,
-                        output_field=models.DecimalField(),
-                    ),
-                    combined_default_probability=Concat(
-                        F("combined_default_probability_decimal"),
-                        Value(""),
-                        output_field=models.CharField(),
-                    ),
+                    # combined_default_probability_decimal=Round(
+                    #     Value(0.50) * (F("qt_pd") + F("pr_downside_decimal")),
+                    #     2,
+                    #     output_field=models.DecimalField(),
+                    # ),
+                    # combined_default_probability=Concat(
+                    #     F("combined_default_probability_decimal"),
+                    #     Value(""),
+                    #     output_field=models.CharField(),
+                    # ),
                 )
             )
 
