@@ -1,4 +1,5 @@
 sip_data_dictionary = {
+    # Percentage Rank
     "perc_rpe": "% Rank-PE",
     "perc_rpe_ey0": "% Rank-PE-Forward EPS Est Y0",
     "perc_rpe_ey1": "% Rank-PE-Forward EPS Est Y1",
@@ -213,6 +214,7 @@ sip_data_dictionary = {
     "perc_rshrinst": "% Rank-Institutional Ownership %",
     "perc_rshrinstn": "% Rank-Institutional shareholders",
     "perc_rshrinsd": "% Rank-Insider Ownership %",
+    # Balance Sheet Annual
     "bsa_cash_y1": "Cash Y1",
     "bsa_cash_y2": "Cash Y2",
     "bsa_cash_y3": "Cash Y3",
@@ -400,6 +402,7 @@ sip_data_dictionary = {
     "bsa_entval_y5": "Enterprise Value Y5",
     "bsa_entval_y6": "Enterprise Value Y6",
     "bsa_entval_y7": "Enterprise Value Y7",
+    # Balance Sheet Quarterly
     "bsq_cps_q1": "Cash per share Q1",
     "bsq_ncps_q1": "Net cash per share Q1",
     "bsq_cash_q1": "Cash Q1",
@@ -611,6 +614,7 @@ sip_data_dictionary = {
     "bsq_entval_q6": "Enterprise Value Q6",
     "bsq_entval_q7": "Enterprise Value Q7",
     "bsq_entval_q8": "Enterprise Value Q8",
+    # Cash Flow Annual
     "cfa_tco_12m": "Cash from operations 12m",
     "cfa_tco_y1": "Cash from operations Y1",
     "cfa_tco_y2": "Cash from operations Y2",
@@ -696,6 +700,7 @@ sip_data_dictionary = {
     "cfa_divpaid_y6": "Common Dividends Paid Y6",
     "cfa_divpaid_y7": "Common Dividends Paid Y7",
     "cfa_divpaid_12": "Common Dividends Paid 12m",
+    # Cash Flow Quarterly
     "cfq_tco_q1": "Cash from operations Q1",
     "cfq_tco_q2": "Cash from operations Q2",
     "cfq_tco_q3": "Cash from operations Q3",
@@ -788,6 +793,7 @@ sip_data_dictionary = {
     "cfq_divpaid_q6": "Common Dividends Paid Q6",
     "cfq_divpaid_q7": "Common Dividends Paid Q7",
     "cfq_divpaid_q8": "Common Dividends Paid Q8",
+    # Company Information
     "ci_company": "Company name",
     "ci_ticker": "Ticker",
     "ci_exchange": "Exchange",
@@ -809,6 +815,7 @@ sip_data_dictionary = {
     "ci_adr": "ADR/ADS Stock",
     "ci_employees": "Number of employees",
     "ci_optionable": "Optionable",
+    # Dates and Period
     "date_perend_y1": "Ending date Y1",
     "date_perend_y2": "Ending date Y2",
     "date_perend_y3": "Ending date Y3",
@@ -869,6 +876,7 @@ sip_data_dictionary = {
     "date_updtyp_q6": "Update type Q6",
     "date_updtyp_q7": "Update type Q7",
     "date_updtyp_q8": "Update type Q8",
+    # Earnings Estimates
     "ee_date_ey0": "Date--Current fiscal year",
     "ee_date_eq0": "Date--Latest Quarterly EPS",
     "ee_eps_ey0": "EPS Est Y0",
@@ -949,6 +957,7 @@ sip_data_dictionary = {
     "ee_sq2_qdate": "Date--Prior Quarterly EPS",
     "ee_repdt_q0": "EPS Est Q0-Exp Rep Date",
     "ee_repdt_q1": "EPS Est Q1-Exp Rep Date",
+    # Growth Rates
     "gr_sales_g1f": "Sales-Growth 1yr",
     "gr_sales_g3f": "Sales-Growth 3yr",
     "gr_sales_g5f": "Sales-Growth 5yr",
@@ -1063,6 +1072,7 @@ sip_data_dictionary = {
     "gr_eps_y7y1": "EPS Increases-Y7 to Y1",
     "gr_eqty_g5f": "Equity (common) Growth - 5yr",
     "gr_reg": "Relative earnings growth",
+    # Income Statement Annual
     "isa_sales_12m": "Sales 12m",
     "isa_sales_y1": "Sales Y1",
     "isa_sales_y2": "Sales Y2",
@@ -1313,6 +1323,7 @@ sip_data_dictionary = {
     "isa_eps_y9": "EPS Y9",
     "isa_eps_y10": "EPS Y10",
     "isa_eps_y11": "EPS Y11",
+    # Income Statement Quarterly
     "isq_sales_q1": "Sales Q1",
     "isq_sales_q2": "Sales Q2",
     "isq_sales_q3": "Sales Q3",
@@ -1557,6 +1568,7 @@ sip_data_dictionary = {
     "isq_dep_q11": "Depreciation Q11",
     "isq_dep_q12": "Depreciation Q12",
     "isq_dep_q13": "Depreciation Q13",
+    # Multiples
     "mlt_pe": "PE",
     "mlt_pe_ey0": "PE-Forward EPS Est Y0",
     "mlt_pe_ey1": "PE-Forward EPS Est Y1",
@@ -1704,6 +1716,7 @@ sip_data_dictionary = {
     "mlt_shy_a5y": "Shareholder Yield-Average 5 years",
     "mlt_shy_a7y": "Shareholder Yield-Average 7 years",
     "mlt_yieldl_a7y": "Yield Low-Avg 7 year",
+    # Price and Share Statistics
     "psd_split_date": "Split Date",
     "psd_split_fact": "Split Factor",
     "psd_price_date": "Price Date",
@@ -1797,6 +1810,7 @@ sip_data_dictionary = {
     "psd_shr_dy11": "Shares Diluted Y11",
     "psd_pdate_l52w": "Price-Date Low 52 Week",
     "psd_pdate_h52w": "Price-Date High 52 Week",
+    # Prices Annual
     "psda_price_y1": "Price Y1",
     "psda_price_y2": "Price Y2",
     "psda_price_y3": "Price Y3",
@@ -1825,6 +1839,7 @@ sip_data_dictionary = {
     "psda_pricev_y5": "Price--Volume Y5",
     "psda_pricev_y6": "Price--Volume Y6",
     "psda_pricev_y7": "Price--Volume Y7",
+    # Prices Dates
     "psdd_priced_y1": "Price--Date Y1",
     "psdd_priced_y2": "Price--Date Y2",
     "psdd_priced_y3": "Price--Date Y3",
@@ -1952,6 +1967,7 @@ sip_data_dictionary = {
     "psdd_pricedm118": "Price--Date M118",
     "psdd_pricedm119": "Price--Date M119",
     "psdd_pricedm120": "Price--Date M120",
+    # Prices Monthly Close
     "psdc_price_m001": "Price M001",
     "psdc_price_m002": "Price M002",
     "psdc_price_m003": "Price M003",
@@ -2072,6 +2088,7 @@ sip_data_dictionary = {
     "psdc_price_m118": "Price M118",
     "psdc_price_m119": "Price M119",
     "psdc_price_m120": "Price M120",
+    # Prices Monthly High
     "psdh_pricehm001": "Price--High M001",
     "psdh_pricehm002": "Price--High M002",
     "psdh_pricehm003": "Price--High M003",
@@ -2192,6 +2209,7 @@ sip_data_dictionary = {
     "psdh_pricehm118": "Price--High M118",
     "psdh_pricehm119": "Price--High M119",
     "psdh_pricehm120": "Price--High M120",
+    # Prices Monthly Low
     "psdl_pricelm001": "Price--Low M001",
     "psdl_pricelm002": "Price--Low M002",
     "psdl_pricelm003": "Price--Low M003",
@@ -2312,6 +2330,7 @@ sip_data_dictionary = {
     "psdl_pricelm118": "Price--Low M118",
     "psdl_pricelm119": "Price--Low M119",
     "psdl_pricelm120": "Price--Low M120",
+    # Prices Monthly Volume
     "psdv_pricevm001": "Price--Volume M001",
     "psdv_pricevm002": "Price--Volume M002",
     "psdv_pricevm003": "Price--Volume M003",
@@ -2432,6 +2451,7 @@ sip_data_dictionary = {
     "psdv_pricevm118": "Price--Volume M118",
     "psdv_pricevm119": "Price--Volume M119",
     "psdv_pricevm120": "Price--Volume M120",
+    # Ratios
     "rat_gpm_12m": "Gross margin 12m",
     "rat_gpm_y1": "Gross margin Y1",
     "rat_gpm_y2": "Gross margin Y2",
@@ -2593,6 +2613,7 @@ sip_data_dictionary = {
     "rat_fscore_y5": "F Score Y5",
     "rat_fscore_y6": "F Score Y6",
     "rat_fscore_y7": "F Score Y7",
+    # Valuations
     "val_sps_val": "Valuation--P/SPS",
     "val_eps_val": "Valuation--PE",
     "val_cfps_val": "Valuation--P/CFPS",

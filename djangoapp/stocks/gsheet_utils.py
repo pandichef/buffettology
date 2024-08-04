@@ -63,10 +63,53 @@ def create_google_sheet(filename: str, df: pd.DataFrame) -> str:
     # worksheet.update_value("A1", "Hello, World!")
     # Create a sample DataFrame
 
+    sip_field_type = {
+        "perc": "% Rank",
+        "bsa": "Balance Sheet - Annual",
+        "bsq": "Balance Sheet - Quarterly",
+        "cfa": "Cash Flow - Annual",
+        "cfq": "Cash Flow - Quarterly",
+        "ci": "Company Information",
+        "date": "Dates and Periods",
+        "ee": "Earnings Estimates",
+        "gr": "Growth Rates",
+        "isa": "Income Statement - Annual",
+        "isq": "Income Statement - Quarterly",
+        "mlt": "Multiples",
+        "psd": "Price and Share Statistics",
+        "psda": "Prices - Annual",
+        "psdd": "Prices - Dates",
+        "psdc": "Prices - Monthly Close",
+        "psdh": "Prices - Monthly High",
+        "psdl": "Prices - Monthly Low",
+        "psdv": "Prices - Monthly Volume",
+        "rat": "Ratios",
+        "val": "Valuations",
+    }
+
     # Update the content of the Google Sheet with DataFrame
+    for field_type in sip_field_type:
+        filtered_df = df[df["name"].str.startswith(field_type + "_")]
+        worksheet = spreadsheet.add_worksheet(
+            title=sip_field_type[field_type]
+        )  # You can specify the number of rows and columns
+        worksheet.set_dataframe(
+            df=filtered_df, start=(1, 1), copy_index=False, copy_head=True
+        )
+    # % Rank
+    # worksheet = spreadsheet.sheet1
+    # worksheet.title = "% Rank"
+    # worksheet.set_dataframe(df=df, start=(1, 1), copy_index=False, copy_head=True)
+    # worksheet2 = spreadsheet.add_worksheet(
+    #     title="Subset of Data"
+    # )  # You can specify the number of rows and columns
+    # worksheet2.set_dataframe(
+    #     df=df.head(), start=(1, 1), copy_index=False, copy_head=True
+    # )
+
+    # delete sheet1
     worksheet = spreadsheet.sheet1
-    # df = df.rename(columns=sip_data_dictionary)
-    worksheet.set_dataframe(df=df, start=(1, 1), copy_index=False, copy_head=True)
+    spreadsheet.del_worksheet(worksheet)
 
     # Print the link to the Google Sheet
     sheet_url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/edit"
