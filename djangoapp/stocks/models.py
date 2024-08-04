@@ -42,6 +42,7 @@ from .llm_utils import (
 from .validators import validate_parquet_file
 from .gsheet_utils import create_google_sheet
 from .sip_data_dictionary import sip_data_dictionary
+from stocks.screens.utils import get_current_sip_dataframe
 
 
 class Stock(models.Model):
@@ -160,10 +161,10 @@ class Stock(models.Model):
 
         # get SIP data
         try:
-            sip_file_path = os.path.join(
-                settings.MEDIA_ROOT, datetime.now().strftime("%Y%m%d") + ".parquet"
-            )
-            sip_df = pd.read_parquet(sip_file_path)
+            # sip_file_path = os.path.join(
+            #     settings.MEDIA_ROOT, datetime.now().strftime("%Y%m%d") + ".parquet"
+            # )
+            sip_df = get_current_sip_dataframe()
 
             for field in ["psd_price", "ee_eps_ey0", "qt_pd"]:
                 self.setattr_from_sip(field, sip_df)

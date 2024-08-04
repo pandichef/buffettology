@@ -18,11 +18,15 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 from iosl.views import script_view
+from stocks.views import screen_dropdown, low_pe_view, low_pb_view
 from django.conf import settings
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", script_view, name="scripts"),
+    # path("", script_view, name="scripts"),
+    path("screens/low_pe", low_pe_view, name="low_pe_view"),
+    path("screens/low_pb", low_pb_view, name="low_pb_view"),
+    path("", screen_dropdown, name="screen_dropdown"),
     path("tinymce/", include("tinymce.urls")),
     # path("markdownx/", include("markdownx.urls")),
 ]
