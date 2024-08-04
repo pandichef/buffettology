@@ -1,6 +1,7 @@
 import os
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
 from stocks.screens.low_pe import low_pe
 from stocks.screens.low_pb import low_pb
 from .sip_data_dictionary import sip_data_dictionary
@@ -93,6 +94,7 @@ drop_down_html = """
 """
 
 
+@login_required
 def screen_dropdown(request):
     # <option value="https://example.com/page1">Page 1</option>
     # <option value="https://example.com/page2">Page 2</option>
@@ -116,8 +118,9 @@ def screen_dropdown(request):
     return HttpResponse(drop_down_html.format(screen_options=options))
 
 
+@login_required
 def low_pe_view(request):
-    df = low_pe().rename(columns=sip_data_dictionary).head()
+    df = low_pe()[["mlt_pe"]].rename(columns=sip_data_dictionary)
     df.index.name = None
 
     # Convert DataFrame to HTML
@@ -134,8 +137,9 @@ def low_pe_view(request):
     return HttpResponse(html_content)
 
 
+@login_required
 def low_pb_view(request):
-    df = low_pb().rename(columns=sip_data_dictionary).head()
+    df = low_pb()[["mlt_pbvps"]].rename(columns=sip_data_dictionary)
     df.index.name = None
 
     # Convert DataFrame to HTML
