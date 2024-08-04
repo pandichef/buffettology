@@ -139,6 +139,15 @@ class StockAdmin(admin.ModelAdmin):
             s.replace("_completion", "_rendered") if s.endswith("_completion") else s
             for s in all_fields
         ]
+        # updated_strings = [
+        #     s.replace("google_sheet_url", "google_sheet") for s in all_fields
+        # ]
+        updated_strings = [
+            "google_sheet" if item == "google_sheet_url" else item
+            for item in updated_strings
+        ]
+        updated_strings.remove("id")
+        updated_strings.remove("ticker")
         return updated_strings
 
     def get_readonly_fields(self, request, obj=None):
@@ -152,7 +161,14 @@ class StockAdmin(admin.ModelAdmin):
         return (
             non_editable_fields
             + rendered_fields
-            + ["ticker", "psd_price", "ee_eps_ey0", "qt_pd", "eps_estimate_y10",]
+            + [
+                "ticker",
+                "psd_price",
+                "ee_eps_ey0",
+                "qt_pd",
+                "eps_estimate_y10",
+                "google_sheet",
+            ]
         )
 
     for i in range(1, 16):
@@ -188,6 +204,19 @@ def fisher{i}_rendered(self, obj):
         return obj.combined_default_probability
 
     combined_default_probability.short_description = "Combo PD (%)"
+
+    #############
+    # OTHER HACKS
+    def google_sheet(self, obj):
+        if obj.google_sheet_url:
+            return format_html(
+                '<a href="{}" target="_blank">{}</a>',
+                obj.google_sheet_url,
+                obj.google_sheet_url,
+            )
+        return "-"
+
+    google_sheet.short_description = "Google Sheet"
 
 
 admin.site.register(Stock, StockAdmin)

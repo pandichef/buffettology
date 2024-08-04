@@ -10,6 +10,7 @@ from django.db.models import (
     FloatField,
     DecimalField,
     TextField,
+    URLField,
 )
 from django.db.models.functions import Round, Concat, Coalesce
 from django.conf import settings
@@ -38,12 +39,15 @@ from .llm_utils import (
     extract_completion_float,
 )
 from .validators import validate_parquet_file
+from .gsheet_utils import create_google_sheet
+from .sip_data_dictionary import sip_data_dictionary
 
 
 class Stock(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     ticker = models.CharField(max_length=7, unique=False)
+    google_sheet_url = URLField(null=True)
     conclusion = HTMLField(blank=True, null=True)
     psd_price = models.DecimalField(
         max_digits=10,
@@ -167,6 +171,17 @@ class Stock(models.Model):
                     future.result()
                 except Exception as e:
                     print(f"Exception in thread: {e}")
+
+        # sip_df = sip_df.rename(columns=sip_data_dictionary)
+        this_stock_data = sip_df.transpose()[[self.ticker]]
+        this_stock_data = this_stock_data.reset_index(drop=False)
+        this_stock_data = this_stock_data.rename(
+            columns={"index": "name", self.ticker: "value"}
+        )
+        this_stock_data["description"] = this_stock_data["name"].map(
+            sip_data_dictionary
+        )
+        self.google_sheet_url = create_google_sheet(self.ticker, this_stock_data)
 
         super().save(*args, **kwargs)
 
