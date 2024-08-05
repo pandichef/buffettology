@@ -19,6 +19,7 @@ from .models import (
     # CustomUser,
     Stock,
     SIPFlatFile,
+    CustomField,
 )  # Import your model here
 
 
@@ -40,13 +41,21 @@ class BulkCreateForm(forms.Form):
         self.fields["tickers"].label = False  # Remove the default label rendering
 
 
-class SIPFlatFileAdmin(admin.ModelAdmin):
-    # pass
-    readonly_fields = ["quantitative_pd_regression_summary"]
-    exclude = ["qt_pd_regression_summary"]
+class CustomFieldInline(admin.TabularInline):
+    template = "admin/stocks/custom_tabular.html"
+    can_delete = False
+    model = CustomField
+    fields = ["name", "description"]
+    readonly_fields = ["name", "description"]
+    extra = 0
+    show_change_link = True
 
-    def quantitative_pd_regression_summary(self, obj):
-        return format_html(f"<pre>{obj.qt_pd_regression_summary}</pre>")
+    def has_add_permission(self, request, obj):
+        return False
+
+
+class SIPFlatFileAdmin(admin.ModelAdmin):
+    inlines = [CustomFieldInline]
 
 
 class StockAdmin(admin.ModelAdmin):
@@ -223,3 +232,23 @@ def fisher{i}_rendered(self, obj):
 
 admin.site.register(Stock, StockAdmin)
 admin.site.register(SIPFlatFile, SIPFlatFileAdmin)
+
+
+class CustomFieldAdmin(admin.ModelAdmin):
+    exclude = ["details"]
+    readonly_fields = ["sip_flat_file", "name", "description", "details_"]
+
+    def details_(self, obj):
+        return format_html(f"<pre>{obj.details}</pre>")
+
+    def has_add_permission(self, request) -> bool:
+        return False
+
+    def has_delete_permission(self, request, obj=None) -> bool:
+        return False
+
+    def has_change_permission(self, request, obj=None) -> bool:
+        return False
+
+
+admin.site.register(CustomField, CustomFieldAdmin)

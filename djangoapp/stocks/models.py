@@ -22,7 +22,9 @@ import pandas as pd
 from datetime import datetime
 import os
 import pickle
-from .add_qt_pd import add_qt_pd
+
+# from .add_qt_pd import gen_logit_pd
+from .custom_fields.gen_logit_pd import gen_logit_pd
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 import io
@@ -312,7 +314,7 @@ class SIPFlatFile(models.Model):
     file = models.FileField(
         upload_to=use_date_as_filename, validators=[validate_parquet_file]
     )
-    qt_pd_regression_summary = models.TextField(null=True, blank=True)
+    # qt_pd_regression_summary = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f"{str(self.file.name)}"
@@ -331,29 +333,32 @@ class SIPFlatFile(models.Model):
                     os.remove(old_file.path)
 
         # Process the new file
-        if self.file:
-            # Read the uploaded file into a pandas DataFrame using an in-memory buffer
-            self.file.seek(0)
-            buffer = io.BytesIO(self.file.read())
-            df = pd.read_parquet(buffer)
+        # if self.file:
+        # Read the uploaded file into a pandas DataFrame using an in-memory buffer
+        self.file.seek(0)
+        buffer = io.BytesIO(self.file.read())
+        df = pd.read_parquet(buffer)
 
-            # Add the new column
-            df, self.qt_pd_regression_summary = add_qt_pd(df)
+        # Add the new column
+        df, name, description, details = gen_logit_pd(df)
 
-            # Save the modified DataFrame to a new in-memory buffer
-            modified_buffer = io.BytesIO()
-            df.to_parquet(modified_buffer, index=True)
-            modified_buffer.seek(0)
+        # Save the modified DataFrame to a new in-memory buffer
+        modified_buffer = io.BytesIO()
+        df.to_parquet(modified_buffer, index=True)
+        modified_buffer.seek(0)
 
-            # Save the new file content back to the file field
-            self.file.save(
-                os.path.basename(self.file.name),
-                ContentFile(modified_buffer.read()),
-                save=False,
-            )
+        # Save the new file content back to the file field
+        self.file.save(
+            os.path.basename(self.file.name),
+            ContentFile(modified_buffer.read()),
+            save=False,
+        )
 
         # Save the new file
         super(SIPFlatFile, self).save(*args, **kwargs)
+        CustomField.objects.create(
+            name=name, description=description, details=details, sip_flat_file=self
+        )
 
     def delete(self, *args, **kwargs):
         # Delete the file from storage when the model is deleted
@@ -361,3 +366,20 @@ class SIPFlatFile(models.Model):
             if os.path.isfile(self.file.path):
                 os.remove(self.file.path)
         super(SIPFlatFile, self).delete(*args, **kwargs)
+
+
+class CustomField(models.Model):
+    # field_name = models.TextField(null=True, blank=True)
+    name = models.CharField(max_length=30, unique=False)
+    description = models.CharField(max_length=255, unique=False)
+    details = models.TextField(null=True, blank=True)
+    sip_flat_file = models.ForeignKey(
+        SIPFlatFile,
+        on_delete=models.CASCADE,
+        # related_name="sip_flat_files",
+        # null=True,
+        # blank=True,
+    )
+
+    def __str__(self):
+        return f"{str(self.name)}"

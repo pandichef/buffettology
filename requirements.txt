@@ -1,4 +1,15 @@
+# Python Anywhere Image
+numpy==1.21.6
+# numpy==1.21
+pandas==1.3.5
+mysqlclient==2.1.0
+Django==4.0.6
+
+# Cloud APIs
 openai==1.3.7
+google-api-python-client==2.139.0
+
+# Other
 statsmodels==0.14.0
 django-tinymce==4.1.0
 python-dotenv==1.0.0
@@ -6,13 +17,6 @@ pyarrow==13.0.0
 markdown2==2.5.0
 # django-markdownx==4.0.7
 # pygsheets==2.0.6
-google-api-python-client==2.139.0
 
 # local only
 django-extensions
-
-# Python Anywhere Image
-# numpy==1.21.6
-# pandas==1.3.5
-# mysqlclient==2.1.0
-# Django==4.0.6

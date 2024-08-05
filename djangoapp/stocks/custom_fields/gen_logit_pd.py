@@ -6,9 +6,7 @@ from contextlib import redirect_stdout
 from typing import Tuple
 
 
-def add_qt_pd(df: pd.DataFrame) -> Tuple[pd.DataFrame, str]:
-    # df = pd.read_parquet("/django_media_dev/20240628.parquet")
-
+def gen_logit_pd(df: pd.DataFrame) -> Tuple[pd.DataFrame, str, str, str]:
     df["return_12m"] = 100.0 * (
         df.psdc_price_m001.astype(float) / df.psdc_price_m012.astype(float) - 1.0
     )
@@ -18,14 +16,14 @@ def add_qt_pd(df: pd.DataFrame) -> Tuple[pd.DataFrame, str]:
     # df = pd.read_csv('your_data.csv')  # Replace with your data loading method
 
     # Define the covariates
-    covariates2 = [
+    covariates2 = [  # used in regression
         "rat_quick_y2",
         "rat_curr_y2",
         "rat_ltd_eq_y2",
         "rat_tie_y2",
         "rat_zscore_y2",
     ]
-    covariates1 = [
+    covariates1 = [  # to generate predicted PD
         "rat_quick_y1",
         "rat_curr_y1",
         "rat_ltd_eq_y1",
@@ -42,6 +40,8 @@ def add_qt_pd(df: pd.DataFrame) -> Tuple[pd.DataFrame, str]:
         df_clean[covariate] = df_clean[covariate].astype(float)
         df[covariate] = df[covariate].astype(float)
 
+    #########################
+    # FIT MODEL USING Y2 DATA
     # Add a constant term to the covariates
     X2 = sm.add_constant(df_clean[covariates2])
 
@@ -53,16 +53,19 @@ def add_qt_pd(df: pd.DataFrame) -> Tuple[pd.DataFrame, str]:
     logit_model = sm.Logit(y, X2)
     result = logit_model.fit()
 
+    #########################
+    # GENERATE PD USING Y1 DATA
+    X1 = sm.add_constant(df[covariates1])
+    df["qt_pd"] = result.predict(X1) * 100
+
     # Print the summary of the logistic regression model
-    # print(result.summary())
     with io.StringIO() as buf, redirect_stdout(buf):
         print(result.summary())
         qt_pd_regression_summary = buf.getvalue()
 
-    # fit data
-    X1 = sm.add_constant(df[covariates1])
-    df["qt_pd"] = result.predict(X1) * 100
-    # df[["default_prediction", "rat_zscore_y1", "rat_zscore_y2"]].to_clipboard()
-
-    # return df, "<pre>" + qt_pd_regression_summary + "</pre>"
-    return df, qt_pd_regression_summary
+    return (
+        df,
+        "qt_pd",
+        r"Probability that stock drops by more than 50% over the next year",
+        qt_pd_regression_summary,
+    )
