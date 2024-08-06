@@ -71,22 +71,21 @@ MIDDLEWARE = [
 
 ##########################
 # For Django Debug Toolbar
-INSTALLED_APPS += ["debug_toolbar"]
-MIDDLEWARE += [
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
-]
-INTERNAL_IPS = ["127.0.0.1"]  # for Django Debug Toolbar
+if not ON_PYTHONANYWHERE:
+    INSTALLED_APPS += ["debug_toolbar"]
+    MIDDLEWARE += [
+        "debug_toolbar.middleware.DebugToolbarMiddleware",
+    ]
+    INTERNAL_IPS = ["127.0.0.1"]  # for Django Debug Toolbar
 
+    def show_toolbar(request):
+        # return str(request.user) == "username"
+        return request.user.is_superuser
 
-def show_toolbar(request):
-    # return str(request.user) == "username"
-    return request.user.is_superuser
-
-
-DEBUG_TOOLBAR_CONFIG = {
-    "SHOW_TOOLBAR_CALLBACK": "config.settings.show_toolbar",
-    "INTERCEPT_REDIRECTS": False,
-}
+    DEBUG_TOOLBAR_CONFIG = {
+        "SHOW_TOOLBAR_CALLBACK": "config.settings.show_toolbar",
+        "INTERCEPT_REDIRECTS": False,
+    }
 ##########################
 
 ##########################
