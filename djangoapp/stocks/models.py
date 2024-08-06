@@ -61,6 +61,7 @@ class Stock(models.Model):
         max_digits=5,
         decimal_places=2,
         validators=[MinValueValidator(0), MaxValueValidator(100)],
+        null=True,
     )
     # psd_price = models.DecimalField(
     #     max_digits=10,
