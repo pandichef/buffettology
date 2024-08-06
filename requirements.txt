@@ -19,4 +19,5 @@ markdown2==2.5.0
 # pygsheets==2.0.6
 
 # local only
-django-extensions
+django-extensions==3.2.3
+django-debug-toolbar==3.8.1

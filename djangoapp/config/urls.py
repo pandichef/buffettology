@@ -36,5 +36,13 @@ admin.site.site_title = "Diligence"
 admin.site.index_title = "Members Only"
 # admin.site.site_url = os.environ["CHATPR_SITE_URL"]
 
-if not os.name == "posix":
+# if not os.name == "posix":
+if not settings.ON_PYTHONANYWHERE:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+##########################
+# For Django Debug Toolbar
+import debug_toolbar
+
+urlpatterns = [path("__debug__/", include(debug_toolbar.urls)),] + urlpatterns
+##########################

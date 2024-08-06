@@ -48,8 +48,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # local apps
-    # "django_extensions",
+    # my apps
+    "django_extensions",
     # "markdownx",
     "tinymce",
     "accounts",
@@ -57,8 +57,6 @@ INSTALLED_APPS = [
     "stocks",
 ]
 
-if not ON_PYTHONANYWHERE:
-    INSTALLED_APPS += ["django_extensions"]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -70,6 +68,26 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     # "base_app.check_job_status.CheckJobStatus",
 ]
+
+##########################
+# For Django Debug Toolbar
+INSTALLED_APPS += ["debug_toolbar"]
+MIDDLEWARE += [
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
+]
+INTERNAL_IPS = ["127.0.0.1"]  # for Django Debug Toolbar
+
+
+def show_toolbar(request):
+    # return str(request.user) == "username"
+    return request.user.is_superuser
+
+
+DEBUG_TOOLBAR_CONFIG = {
+    "SHOW_TOOLBAR_CALLBACK": "config.settings.show_toolbar",
+}
+##########################
+
 
 ROOT_URLCONF = "config.urls"
 
