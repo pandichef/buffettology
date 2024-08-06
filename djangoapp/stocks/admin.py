@@ -116,7 +116,8 @@ class StockAdmin(admin.ModelAdmin):
         # "long_term_irr",
         # "true_count",
         # "not_null_count",
-        "pr_downside",
+        "percentage_true",
+        # "pr_downside",
         # "qt_pd",
         # "combined_default_probability",
         "fisher1",
@@ -178,6 +179,7 @@ class StockAdmin(admin.ModelAdmin):
                 "eps_estimate_y10",
                 "google_sheet",
                 "ci_company",
+                "percentage_true",
             ]
         )
 
@@ -205,10 +207,10 @@ def fisher{i}_rendered(self, obj):
 
     # long_term_irr.short_description = "LT IRR (%)"
 
-    def pr_downside(self, obj):
-        return obj.pr_downside
+    # def pr_downside(self, obj):
+    #     return obj.pr_downside
 
-    pr_downside.short_description = "Qualitative PD (%)"
+    # pr_downside.short_description = "Qualitative PD (%)"
 
     def combined_default_probability(self, obj):
         return obj.combined_default_probability

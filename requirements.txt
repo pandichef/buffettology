@@ -21,3 +21,4 @@ markdown2==2.5.0
 # local only
 django-extensions==3.2.3
 django-debug-toolbar==3.8.1
+# django-silk==5.1.0

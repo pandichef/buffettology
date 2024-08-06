@@ -85,7 +85,19 @@ def show_toolbar(request):
 
 DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TOOLBAR_CALLBACK": "config.settings.show_toolbar",
+    "INTERCEPT_REDIRECTS": False,
 }
+##########################
+
+##########################
+# For Django Silk
+# INSTALLED_APPS += ["silk"]
+# MIDDLEWARE += [
+#     "silk.middleware.SilkyMiddleware",
+# ]
+# SILKY_DYNAMIC_PROFILING = [
+#     {"module": "stocks.admin", "function": "StockAdmin.get_readonly_fields"}
+# ]
 ##########################
 
 

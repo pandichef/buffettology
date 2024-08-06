@@ -45,6 +45,7 @@ from .validators import validate_parquet_file
 from .gsheet_utils import create_google_sheet, create_excel_sheet
 from .sip_data_dictionary import sip_data_dictionary
 from stocks.screens.utils import get_current_sip_dataframe
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class Stock(models.Model):
@@ -56,6 +57,11 @@ class Stock(models.Model):
     )
     google_sheet_url = URLField(null=True)
     conclusion = HTMLField(blank=True, null=True)
+    percentage_true = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+    )
     # psd_price = models.DecimalField(
     #     max_digits=10,
     #     decimal_places=2,
@@ -167,138 +173,159 @@ class Stock(models.Model):
     #     return super().delete(using, keep_parents)
 
     def save(self, *args, request=None, **kwargs):
-        if self.ticker:
-            self.ticker = self.ticker.upper()
+        if not self.pk:
+            if self.ticker:
+                self.ticker = self.ticker.upper()
 
-        if not self.eps_estimate_y10_completion:
-            self.eps_estimate_y10_completion = fetch_llm_completion(
-                eps_estimate_y10_prompt.format(
-                    ticker=self.ticker, fisher_prompt0=fisher_prompts[0]
+            if not self.eps_estimate_y10_completion:
+                self.eps_estimate_y10_completion = fetch_llm_completion(
+                    eps_estimate_y10_prompt.format(
+                        ticker=self.ticker, fisher_prompt0=fisher_prompts[0]
+                    )
                 )
-            )
-            self.eps_estimate_y10 = extract_completion_float(
-                self.eps_estimate_y10_completion
-            )
-
-        # Use multithreading to process fisher analyses
-        def process_fisher(i):
-            analysis_field = f"fisher{i}_completion"
-            fisher_field = f"fisher{i}"
-            # print(getattr(self, analysis_field))
-            if not getattr(self, analysis_field):
-                # print("analysis_field")
-                analysis = fetch_llm_completion(
-                    f"For ticker {self.ticker}, {fisher_prompts[i-1]}"
-                    + " "
-                    + boolean_suffix
+                self.eps_estimate_y10 = extract_completion_float(
+                    self.eps_estimate_y10_completion
                 )
-                setattr(
-                    self,
-                    analysis_field,
-                    fisher_prompts[i - 1]
-                    + f" \n#####{settings.BASE_OPENAI_MODEL} \n"
-                    + analysis,
+
+            # Use multithreading to process fisher analyses
+            def process_fisher(i):
+                analysis_field = f"fisher{i}_completion"
+                fisher_field = f"fisher{i}"
+                # print(getattr(self, analysis_field))
+                if not getattr(self, analysis_field):
+                    # print("analysis_field")
+                    analysis = fetch_llm_completion(
+                        f"For ticker {self.ticker}, {fisher_prompts[i-1]}"
+                        + " "
+                        + boolean_suffix
+                    )
+                    setattr(
+                        self,
+                        analysis_field,
+                        fisher_prompts[i - 1]
+                        + f" \n#####{settings.BASE_OPENAI_MODEL} \n"
+                        + analysis,
+                    )
+                    setattr(self, fisher_field, extract_completion_boolean(analysis))
+
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                futures = [executor.submit(process_fisher, i) for i in range(1, 16)]
+                for future in concurrent.futures.as_completed(futures):
+                    try:
+                        future.result()
+                    except Exception as e:
+                        print(f"Exception in thread: {e}")
+
+            # get SIP data
+            try:
+                # sip_file_path = os.path.join(
+                #     settings.MEDIA_ROOT, datetime.now().strftime("%Y%m%d") + ".parquet"
+                # )
+                sip_df = get_current_sip_dataframe()
+
+                # for field in ["psd_price", "ee_eps_ey0", "qt_pd"]:
+                for field in ["ci_company"]:
+                    self.setattr_from_sip(field, sip_df)
+                # sip_df = sip_df.rename(columns=sip_data_dictionary)
+                this_stock_data = sip_df.transpose()[[self.ticker]]
+                this_stock_data = this_stock_data.reset_index(drop=False)
+                this_stock_data = this_stock_data.rename(
+                    columns={"index": "name", self.ticker: "value"}
                 )
-                setattr(self, fisher_field, extract_completion_boolean(analysis))
-
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            futures = [executor.submit(process_fisher, i) for i in range(1, 16)]
-            for future in concurrent.futures.as_completed(futures):
-                try:
-                    future.result()
-                except Exception as e:
-                    print(f"Exception in thread: {e}")
-
-        # get SIP data
-        try:
-            # sip_file_path = os.path.join(
-            #     settings.MEDIA_ROOT, datetime.now().strftime("%Y%m%d") + ".parquet"
-            # )
-            sip_df = get_current_sip_dataframe()
-
-            # for field in ["psd_price", "ee_eps_ey0", "qt_pd"]:
-            for field in ["ci_company"]:
-                self.setattr_from_sip(field, sip_df)
-            # sip_df = sip_df.rename(columns=sip_data_dictionary)
-            this_stock_data = sip_df.transpose()[[self.ticker]]
-            this_stock_data = this_stock_data.reset_index(drop=False)
-            this_stock_data = this_stock_data.rename(
-                columns={"index": "name", self.ticker: "value"}
-            )
-            this_stock_data["description"] = this_stock_data["name"].map(
-                sip_data_dictionary
-            )
-            # self.google_sheet_url = create_google_sheet(self.ticker, this_stock_data)
-            self.google_sheet_url = create_excel_sheet(self.ticker, this_stock_data)
-        except Exception as e:
-            print(f"An error occurred while processing the file: {e}")
-            if request is not None:
-                messages.error(
-                    request, f"An error occurred while processing the file: {e}"
+                this_stock_data["description"] = this_stock_data["name"].map(
+                    sip_data_dictionary
                 )
-            # return None
-            # raise ValidationError(f"An error occurred while processing the file: {e}")
+                # self.google_sheet_url = create_google_sheet(self.ticker, this_stock_data)
+                self.google_sheet_url = create_excel_sheet(self.ticker, this_stock_data)
+            except Exception as e:
+                print(f"An error occurred while processing the file: {e}")
+                if request is not None:
+                    messages.error(
+                        request, f"An error occurred while processing the file: {e}"
+                    )
+                # return None
+                # raise ValidationError(f"An error occurred while processing the file: {e}")
+
+        # fisher_field_list = [eval(f"self.fisher{i}") for i in range(1, 16)]
+        fisher_field_list = []
+        for i in range(1, 16):
+            fisher_field_list.append(eval(f"self.fisher{i}"))
+
+        def calculate_percentage_true(list_of_fields):
+            not_none_values = [v for v in list_of_fields if v is not None]
+            if not_none_values:
+                return sum(not_none_values) / len(not_none_values) * 100
+            return None
+
+        self.percentage_true = calculate_percentage_true(fisher_field_list)
+        # self.percentage_true = 100.0
+        # print(fisher_field_list)
 
         super().save(*args, **kwargs)
 
-    class CustomManager(models.Manager):
-        def get_queryset(self):
-            fisher_field_list = [f"fisher{i}" for i in range(1, 16)]
-            return (
-                super()
-                .get_queryset()
-                .annotate(
-                    # price_in_y10=Value(20) * F("eps_estimate_y10"),
-                    # long_term_irr=Concat(
-                    #     Round(
-                    #         Value(100)
-                    #         * (
-                    #             (F("price_in_y10") / F("psd_price"))
-                    #             ** Value(0.10, output_field=DecimalField())
-                    #             - 1
-                    #         ),
-                    #         2,
-                    #     ),
-                    #     Value(""),
-                    #     output_field=models.CharField(),
-                    # ),
-                    true_count=Sum(
-                        sum(Coalesce(F(field), 0.0) for field in fisher_field_list),
-                        output_field=FloatField(),
-                    ),
-                    not_null_count=Sum(
-                        sum(
-                            Case(
-                                When(~Q(**{field: None}), then=Value(1)),
-                                default=Value(0),
-                                output_field=FloatField(),
-                            )
-                            for field in fisher_field_list
-                        ),
-                        output_field=FloatField(),
-                    ),
-                    pr_downside_decimal=Round(
-                        100 - Value(100) * F("true_count") / F("not_null_count"), 2,
-                    ),
-                    pr_downside=Concat(
-                        F("pr_downside_decimal"),
-                        Value(""),
-                        output_field=models.CharField(),
-                    ),
-                    # combined_default_probability_decimal=Round(
-                    #     Value(0.50) * (F("qt_pd") + F("pr_downside_decimal")),
-                    #     2,
-                    #     output_field=models.DecimalField(),
-                    # ),
-                    # combined_default_probability=Concat(
-                    #     F("combined_default_probability_decimal"),
-                    #     Value(""),
-                    #     output_field=models.CharField(),
-                    # ),
-                )
-            )
+    # class CustomManager(models.Manager):
+    #     def get_queryset(self):
+    #         fisher_field_list = [f"fisher{i}" for i in range(1, 16)]
+    #         return (
+    #             super()
+    #             .get_queryset()
+    #             .annotate(
+    #                 # price_in_y10=Value(20) * F("eps_estimate_y10"),
+    #                 # long_term_irr=Concat(
+    #                 #     Round(
+    #                 #         Value(100)
+    #                 #         * (
+    #                 #             (F("price_in_y10") / F("psd_price"))
+    #                 #             ** Value(0.10, output_field=DecimalField())
+    #                 #             - 1
+    #                 #         ),
+    #                 #         2,
+    #                 #     ),
+    #                 #     Value(""),
+    #                 #     output_field=models.CharField(),
+    #                 # ),
+    #                 # true_count=Value("1.0", output_field=FloatField()),
+    #                 true_count=Sum(  # Coalesce is insanely slow
+    #                     sum(Coalesce(F(field), 0.0) for field in fisher_field_list),
+    #                     output_field=FloatField(),
+    #                 ),
+    #                 # true_count=Sum(  # This is super slow
+    #                 #     sum(F(field) for field in fisher_field_list),
+    #                 #     output_field=FloatField(),
+    #                 # ),
+    #                 not_null_count=Sum(
+    #                     sum(
+    #                         Case(
+    #                             When(~Q(**{field: None}), then=Value(1)),
+    #                             default=Value(0),
+    #                             output_field=FloatField(),
+    #                         )
+    #                         for field in fisher_field_list
+    #                     ),
+    #                     output_field=FloatField(),
+    #                 ),
+    #                 pr_downside_decimal=Round(
+    #                     100 - Value(100) * F("true_count") / F("not_null_count"), 2,
+    #                 ),
+    #                 pr_downside=Concat(
+    #                     F("pr_downside_decimal"),
+    #                     Value(""),
+    #                     output_field=models.CharField(),
+    #                 ),
+    #                 # combined_default_probability_decimal=Round(
+    #                 #     Value(0.50) * (F("qt_pd") + F("pr_downside_decimal")),
+    #                 #     2,
+    #                 #     output_field=models.DecimalField(),
+    #                 # ),
+    #                 # combined_default_probability=Concat(
+    #                 #     F("combined_default_probability_decimal"),
+    #                 #     Value(""),
+    #                 #     output_field=models.CharField(),
+    #                 # ),
+    #             )
+    #         )
 
-    objects = CustomManager()
+    # objects = CustomManager()
 
     def __str__(self):
         return f"{str(self.ticker)}"
