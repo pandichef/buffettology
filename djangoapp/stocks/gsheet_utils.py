@@ -159,6 +159,15 @@ def create_excel_sheet(filename: str, df: pd.DataFrame) -> str:
     return file_url
 
 
+def delete_excel_sheet(file_url: str) -> None:
+    file_id = file_url.split("/")[-1]
+    try:
+        drive_service.files().delete(fileId=file_id).execute()
+        print(f"File with ID {file_id} has been deleted.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+
 if __name__ == "__main__":
     df = pd.DataFrame({"name": ["Alice", "Bob"], "age": [24, 30]})
     # create_google_sheet("META", df)

@@ -1,7 +1,9 @@
 {% comment %}
 This is identical the tabular.html in Django itself, except
 translate 'Change' becomes translate 'View Details'
+and inline_admin_form.original is commented out
 {% endcomment %}
+
 {% load i18n admin_urls static admin_modify %}
 <div class="js-inline-admin-formset inline-group" id="{{ inline_admin_formset.formset.prefix }}-group"
      data-inline-type="tabular"

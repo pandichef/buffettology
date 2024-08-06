@@ -225,6 +225,11 @@ def fisher{i}_rendered(self, obj):
                 obj.google_sheet_url,
                 obj.google_sheet_url,
             )
+            # return mark_safe(
+            #     markdown2.markdown(
+            #         f"[{obj.google_sheet_url}]({obj.google_sheet_url})"
+            #     ).replace("<a ", '<a target="_blank" ')
+            # )
         return "-"
 
     google_sheet.short_description = "Google Sheet"

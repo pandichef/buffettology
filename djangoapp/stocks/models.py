@@ -159,6 +159,13 @@ class Stock(models.Model):
         if not getattr(self, fieldname) and not pd.isnull(value):
             setattr(self, fieldname, value)
 
+    # def delete(self, using=None, keep_parents=False):
+    #     print("it works")
+    #     print("it works")
+    #     print("it works")
+    #     print("it works")
+    #     return super().delete(using, keep_parents)
+
     def save(self, *args, request=None, **kwargs):
         if self.ticker:
             self.ticker = self.ticker.upper()
@@ -360,12 +367,16 @@ class SIPFlatFile(models.Model):
             name=name, description=description, details=details, sip_flat_file=self
         )
 
-    def delete(self, *args, **kwargs):
-        # Delete the file from storage when the model is deleted
-        if self.file:
-            if os.path.isfile(self.file.path):
-                os.remove(self.file.path)
-        super(SIPFlatFile, self).delete(*args, **kwargs)
+    # def delete(self, *args, **kwargs):
+    #     # Delete the file from storage when the model is deleted
+    #     if self.file:
+    #         if os.path.isfile(self.file.path):
+    #             os.remove(self.file.path)
+    #     super(SIPFlatFile, self).delete(*args, **kwargs)
+
+    # def delete(self, *args, **kwargs):
+    #     self.file.delete(save=False)  # Delete the file from the storage backend
+    #     super().delete(*args, **kwargs)  # Call the superclass delete method
 
 
 class CustomField(models.Model):
@@ -383,3 +394,22 @@ class CustomField(models.Model):
 
     def __str__(self):
         return f"{str(self.name)}"
+
+
+#############################################
+# Hacks to remove deleted FileField from disk
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
+from .gsheet_utils import delete_excel_sheet
+
+
+@receiver(post_delete, sender=SIPFlatFile)
+def delete_sip_file_on_model_delete(sender, instance, **kwargs):
+    if instance.file:
+        instance.file.delete(save=False)
+
+
+@receiver(post_delete, sender=Stock)
+def delete_excel_file_on_model_delete(sender, instance, **kwargs):
+    if instance.google_sheet_url:
+        delete_excel_sheet(instance.google_sheet_url)
