@@ -74,6 +74,9 @@ class CustomFieldInline(admin.TabularInline):
 class SIPFlatFileAdmin(admin.ModelAdmin):
     inlines = [CustomFieldInline]
 
+    def has_change_permission(self, request, obj=None) -> bool:
+        return False
+
 
 ##############################################################
 

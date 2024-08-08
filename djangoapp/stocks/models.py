@@ -47,6 +47,7 @@ from .gsheet_utils import create_google_sheet, create_excel_sheet
 from .sip_data_dictionary import sip_data_dictionary
 from stocks.screens.utils import get_current_sip_dataframe
 from django.core.validators import MinValueValidator, MaxValueValidator
+from .screens.utils import read_parquet_with_metadata
 
 
 class Stock(models.Model):
@@ -373,7 +374,11 @@ class SIPFlatFile(models.Model):
         # Read the uploaded file into a pandas DataFrame using an in-memory buffer
         self.file.seek(0)
         buffer = io.BytesIO(self.file.read())
-        df = pd.read_parquet(buffer)
+
+        # pd.read_parquet
+        df, metadata = read_parquet_with_metadata(buffer)
+        print("metadata")
+        print(metadata)
 
         # Add the new column
         custom_field_script_list = [gen_sloan_score, gen_logit_pd]

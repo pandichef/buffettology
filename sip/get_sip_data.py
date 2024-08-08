@@ -46,6 +46,46 @@
 import os
 import geopandas as gpd
 import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
+from typing import Tuple
+
+
+def to_parquet_with_metadata(df: pd.DataFrame, path: str, metadata: dict) -> None:
+
+    # Sample DataFrame
+    # df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
+
+    # Convert DataFrame to PyArrow Table
+    table = pa.Table.from_pandas(df)
+
+    # Define metadata
+    # metadata = {"source": "data_source.csv", "created_by": "David"}
+    metadata_bytes = {k: str(v).encode("utf-8") for k, v in metadata.items()}
+
+    # Add metadata to the table's schema
+    table = table.replace_schema_metadata(metadata_bytes)
+
+    # Save to Parquet
+    pq.write_table(table, path)
+
+
+# def read_parquet_with_metadata(
+#     path: str, index_name: str | None = None
+# ) -> Tuple[pd.DataFrame, dict]:
+#     read_table = pq.read_table(path)
+#     df = read_table.to_pandas()
+#     metadata_bytes = read_table.schema.metadata
+#     metadata = {
+#         key.decode("utf-8"): value.decode("utf-8")
+#         for key, value in metadata_bytes.items()
+#     }
+
+#     if index_name:
+#         df = df.set_index(index_name)
+
+#     return df, metadata
+
 
 # from probability_model import add_default_probability
 
@@ -125,7 +165,15 @@ if gdfs:
     # df_add_probability, result = add_default_probability(merged_df)
     # df_add_probability.result = result
     df_add_probability = merged_df
-    df_add_probability.to_parquet("merged_data.parquet")
+
+    if False:
+        df_add_probability.to_parquet("merged_data.parquet")
+    else:
+        to_parquet_with_metadata(
+            df_add_probability,
+            "merged_data.parquet",
+            {"source": "data_source.csv", "created_by": "David"},
+        )
     # merged_df.to_parquet("merged_data.parquet", index=False)
     print(f"Saved merged data to parquet file")
 else:
