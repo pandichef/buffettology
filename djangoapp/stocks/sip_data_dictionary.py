@@ -2640,4 +2640,14 @@ sip_data_dictionary = {
     "val_r1ecg10e": "Rule #1 EPS-Cont Est Y10",
     "val_r1fmktpr": "Rule #1 Future Market Price",
     "val_r1sprice": "Rule #1 Sticker Price",
+    # Custom Fields
+    "qt_pd": "Quantitative Probability of Default",
+    "_rsst_accrual": "_rsst_accrual",
+    "_chg_receivables": "_chg_receivables",
+    "_chg_inventory": "_chg_inventory",
+    "_soft_assets": "_soft_assets",
+    "_chg_cash_sales": "_chg_cash_sales",
+    "_chg_earnings": "_chg_earnings",
+    "_issuance": "_issuance",
+    "_sloan_score": "_sloan_score",
 }

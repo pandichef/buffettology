@@ -25,6 +25,7 @@ import pickle
 
 # from .add_qt_pd import gen_logit_pd
 from .custom_fields.gen_logit_pd import gen_logit_pd
+from .custom_fields.gen_sloan_score import gen_sloan_score
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 import io
@@ -375,7 +376,14 @@ class SIPFlatFile(models.Model):
         df = pd.read_parquet(buffer)
 
         # Add the new column
-        df, name, description, details = gen_logit_pd(df)
+        custom_field_script_list = [gen_logit_pd, gen_sloan_score]
+        custom_field_script_results = []
+        for custom_field_script in custom_field_script_list:
+            df, details, new_columns = custom_field_script(df)
+            custom_field_script_results.append(
+                (custom_field_script.__name__, details, new_columns)
+            )
+        # df, script_name, details, new_columns = gen_logit_pd(df)
 
         # Save the modified DataFrame to a new in-memory buffer
         modified_buffer = io.BytesIO()
@@ -391,9 +399,20 @@ class SIPFlatFile(models.Model):
 
         # Save the new file
         super(SIPFlatFile, self).save(*args, **kwargs)
-        CustomField.objects.create(
-            name=name, description=description, details=details, sip_flat_file=self
-        )
+        for custom_field_script_result in custom_field_script_results:
+            script_name = custom_field_script_result[0]
+            details = custom_field_script_result[1]
+            new_columns = custom_field_script_result[2]
+            custom_field_script = CustomFieldScript.objects.create(
+                name=script_name, details=details, sip_flat_file=self
+            )
+            for new_column in new_columns:
+                CustomField.objects.create(
+                    name=new_column,
+                    description=sip_data_dictionary[new_column],
+                    custom_field_script=custom_field_script,
+                    sip_flat_file=self,
+                )
 
     # def delete(self, *args, **kwargs):
     #     # Delete the file from storage when the model is deleted
@@ -407,10 +426,10 @@ class SIPFlatFile(models.Model):
     #     super().delete(*args, **kwargs)  # Call the superclass delete method
 
 
-class CustomField(models.Model):
+class CustomFieldScript(models.Model):
     # field_name = models.TextField(null=True, blank=True)
-    name = models.CharField(max_length=30, unique=False)
-    description = models.CharField(max_length=255, unique=False)
+    name = models.CharField(max_length=100, unique=True)
+    # description = models.CharField(max_length=255, unique=False)
     details = models.TextField(null=True, blank=True)
     sip_flat_file = models.ForeignKey(
         SIPFlatFile,
@@ -419,6 +438,34 @@ class CustomField(models.Model):
         # null=True,
         # blank=True,
     )
+
+    def __str__(self):
+        return f"{str(self.name)}"
+
+
+class CustomField(models.Model):
+    # field_name = models.TextField(null=True, blank=True)
+    name = models.CharField(max_length=100, unique=True)
+    description = models.CharField(max_length=255, unique=False)
+    # details = models.TextField(null=True, blank=True)
+    sip_flat_file = models.ForeignKey(
+        SIPFlatFile,
+        on_delete=models.CASCADE,
+        # related_name="sip_flat_files",
+        null=True,
+        # blank=True,
+    )
+    custom_field_script = models.ForeignKey(
+        CustomFieldScript,
+        on_delete=models.CASCADE,
+        # related_name="sip_flat_files",
+        # null=True,
+        # blank=True,
+    )
+
+    def save(self, *args, **kwargs):
+        self.description = sip_data_dictionary[self.name]
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{str(self.name)}"

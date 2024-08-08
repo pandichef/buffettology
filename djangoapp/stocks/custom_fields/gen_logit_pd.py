@@ -4,9 +4,13 @@ import numpy as np
 import io
 from contextlib import redirect_stdout
 from typing import Tuple
+from .utils import add_new_column_info
 
 
-def gen_logit_pd(df: pd.DataFrame) -> Tuple[pd.DataFrame, str, str, str]:
+@add_new_column_info
+def gen_logit_pd(df: pd.DataFrame,) -> Tuple[pd.DataFrame, str]:
+    # original_columns = set(df.columns.to_list())
+    # original_column_count = df.shape[1]
     df["return_12m"] = 100.0 * (
         df.psdc_price_m001.astype(float) / df.psdc_price_m012.astype(float) - 1.0
     )
@@ -63,9 +67,18 @@ def gen_logit_pd(df: pd.DataFrame) -> Tuple[pd.DataFrame, str, str, str]:
         print(result.summary())
         qt_pd_regression_summary = buf.getvalue()
 
+    # final_column_count = df.shape[1]
+    # final_columns = df.columns.to_list()
+    del df["return_12m"]
+    del df["default_proxy"]
+    details = qt_pd_regression_summary
+
+    # final_columns = set(df.columns.to_list())
+    # new_columns = tuple(final_columns - original_columns)
+    # assert final_column_count == original_column_count + 1
+
     return (
         df,
-        "qt_pd",
-        r"Probability that stock drops by more than 50% over the next year",
-        qt_pd_regression_summary,
+        details,
+        # new_columns,
     )

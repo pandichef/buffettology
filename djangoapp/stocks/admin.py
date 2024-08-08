@@ -13,12 +13,15 @@ from django.utils.html import format_html
 from django.shortcuts import render
 from django import forms
 from django.utils.safestring import mark_safe
+
+# from nested_admin.nested import NestedTabularInline, NestedModelAdmin
 import markdown2
 from openai import OpenAI, BadRequestError
 from .models import (
     # CustomUser,
     Stock,
     SIPFlatFile,
+    CustomFieldScript,
     CustomField,
 )  # Import your model here
 
@@ -43,19 +46,36 @@ class BulkCreateForm(forms.Form):
 
 class CustomFieldInline(admin.TabularInline):
     template = "admin/stocks/custom_tabular.html"
-    can_delete = False
     model = CustomField
-    fields = ["name", "description"]
-    readonly_fields = ["name", "description"]
+    can_delete = False
     extra = 0
-    show_change_link = True
+    sortable_by = ["name", "description", "custom_field_script"]
+    fields = ["name", "description", "custom_field_script"]
+    readonly_fields = ["name", "description", "custom_field_script"]
 
     def has_add_permission(self, request, obj):
         return False
 
 
+# class CustomFieldScriptInline(admin.TabularInline):
+#     # inlines = [CustomFieldInline]
+#     template = "admin/stocks/custom_tabular.html"
+#     can_delete = False
+#     model = CustomFieldScript
+#     fields = ["name"]
+#     readonly_fields = ["name"]
+#     extra = 0
+#     show_change_link = True
+
+#     def has_add_permission(self, request, obj):
+#         return False
+
+
 class SIPFlatFileAdmin(admin.ModelAdmin):
     inlines = [CustomFieldInline]
+
+
+##############################################################
 
 
 class StockAdmin(admin.ModelAdmin):
@@ -241,9 +261,9 @@ admin.site.register(Stock, StockAdmin)
 admin.site.register(SIPFlatFile, SIPFlatFileAdmin)
 
 
-class CustomFieldAdmin(admin.ModelAdmin):
+class CustomFieldScriptAdmin(admin.ModelAdmin):
     exclude = ["details"]
-    readonly_fields = ["sip_flat_file", "name", "description", "details_"]
+    readonly_fields = ["sip_flat_file", "name", "details_"]
 
     def details_(self, obj):
         return format_html(f"<pre>{obj.details}</pre>")
@@ -253,9 +273,24 @@ class CustomFieldAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None) -> bool:
         return request.user.is_superuser
+        # return False
 
     def has_change_permission(self, request, obj=None) -> bool:
         return False
 
 
-admin.site.register(CustomField, CustomFieldAdmin)
+admin.site.register(CustomFieldScript, CustomFieldScriptAdmin)
+
+
+# class CustomFieldAdmin(admin.ModelAdmin):
+#     def has_add_permission(self, request) -> bool:
+#         return False
+
+#     def has_delete_permission(self, request, obj=None) -> bool:
+#         return request.user.is_superuser
+
+#     def has_change_permission(self, request, obj=None) -> bool:
+#         return False
+
+
+# admin.site.register(CustomField, CustomFieldAdmin)

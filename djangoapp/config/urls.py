@@ -29,6 +29,7 @@ urlpatterns = [
     path("", screen_dropdown, name="screen_dropdown"),
     path("tinymce/", include("tinymce.urls")),
     # path("markdownx/", include("markdownx.urls")),
+    # path("_nested_admin/", include("nested_admin.urls")),
 ]
 
 admin.site.site_header = "Diligence Database"
