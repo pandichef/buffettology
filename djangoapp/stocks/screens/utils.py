@@ -10,23 +10,27 @@ import pandas as pd
 # import pyarrow as pa
 import pyarrow.parquet as pq
 from typing import Tuple
+import json
 
 
-def read_parquet_with_metadata(
-    path, index_name: str | None = None
-) -> Tuple[pd.DataFrame, dict]:
-    read_table = pq.read_table(path)
-    df = read_table.to_pandas()
-    metadata_bytes = read_table.schema.metadata
-    metadata = {
-        key.decode("utf-8"): value.decode("utf-8")
-        for key, value in metadata_bytes.items()
-    }
+def read_parquet_with_metadata(path, index_name: str | None = None) -> pd.DataFrame:
+    table = pq.read_table(path)
+    # index_name = json.loads(table.schema.metadata[b"pandas"].decode("utf-8"))[
+    #     "index_columns"
+    # ][0]
+    df = table.to_pandas()
+    custom_metadata = json.loads(table.schema.metadata[b"custom"].decode("utf-8"))
+    # metadata = {
+    #     key.decode("utf-8"): value.decode("utf-8")
+    #     for key, value in metadata_bytes.items()
+    # }
 
-    if index_name:
-        df = df.set_index(index_name)
+    # if index_name:
+    #     df = df.set_index(index_name)
 
-    return df, metadata
+    df.metadata = custom_metadata
+
+    return df
 
 
 def get_current_sip_dataframe() -> pd.DataFrame:
@@ -34,7 +38,7 @@ def get_current_sip_dataframe() -> pd.DataFrame:
         settings.MEDIA_ROOT, datetime.now().strftime("%Y%m%d") + ".parquet"
     )
     # sip_df = pd.read_parquet(sip_file_path)
-    sip_df, metadata = read_parquet_with_metadata(sip_file_path, index_name="ci_ticker")
+    sip_df = read_parquet_with_metadata(sip_file_path, index_name="ci_ticker")
     print("metadata")
-    print(metadata)
+    print(sip_df.metadata)
     return sip_df

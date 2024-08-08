@@ -376,9 +376,9 @@ class SIPFlatFile(models.Model):
         buffer = io.BytesIO(self.file.read())
 
         # pd.read_parquet
-        df, metadata = read_parquet_with_metadata(buffer)
+        df = read_parquet_with_metadata(buffer, index_name="ci_ticker")
         print("metadata")
-        print(metadata)
+        print(df.metadata)
 
         # Add the new column
         custom_field_script_list = [gen_sloan_score, gen_logit_pd]

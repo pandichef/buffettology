@@ -50,21 +50,35 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 from typing import Tuple
 
+# pd.DataFrame.to_parquet
+# def to_parquet_with_metadata(df: pd.DataFrame, path: str, metadata: dict) -> None:
+def to_parquet_with_metadata(df: pd.DataFrame, path: str) -> None:
+    # if df.index.name:
 
-def to_parquet_with_metadata(df: pd.DataFrame, path: str, metadata: dict) -> None:
+    #     df['__index_level_0__'] =
 
+    custom_metadata = df.metadata
     # Sample DataFrame
     # df = pd.DataFrame({"A": [1, 2, 3], "B": [4, 5, 6]})
 
     # Convert DataFrame to PyArrow Table
     table = pa.Table.from_pandas(df)
 
+    import json
+    from copy import copy
+
+    new_metadata = copy(table.schema.metadata)
+    encoded_custom_metadata = json.dumps(custom_metadata).encode("utf-8")
+    new_metadata.update({b"custom": encoded_custom_metadata})
+
+    # table.schema.metadata.update({b"custom_metadata": encoded_custom_metadata})
+
     # Define metadata
     # metadata = {"source": "data_source.csv", "created_by": "David"}
-    metadata_bytes = {k: str(v).encode("utf-8") for k, v in metadata.items()}
+    # new_metadata_bytes = {k: str(v).encode("utf-8") for k, v in metadata.items()}
 
     # Add metadata to the table's schema
-    table = table.replace_schema_metadata(metadata_bytes)
+    table = table.replace_schema_metadata(new_metadata)
 
     # Save to Parquet
     pq.write_table(table, path)
@@ -165,6 +179,7 @@ if gdfs:
     # df_add_probability, result = add_default_probability(merged_df)
     # df_add_probability.result = result
     df_add_probability = merged_df
+    df_add_probability.metadata = {"source": "data_source.csv", "created_by": "David"}
 
     if False:
         df_add_probability.to_parquet("merged_data.parquet")
@@ -172,7 +187,7 @@ if gdfs:
         to_parquet_with_metadata(
             df_add_probability,
             "merged_data.parquet",
-            {"source": "data_source.csv", "created_by": "David"},
+            # {"source": "data_source.csv", "created_by": "David"},
         )
     # merged_df.to_parquet("merged_data.parquet", index=False)
     print(f"Saved merged data to parquet file")
