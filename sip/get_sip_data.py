@@ -49,6 +49,9 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 from typing import Tuple
+from custom_fields.gen_logit_pd import gen_logit_pd
+from custom_fields.gen_sloan_score import gen_sloan_score
+
 
 # pd.DataFrame.to_parquet
 # def to_parquet_with_metadata(df: pd.DataFrame, path: str, metadata: dict) -> None:
@@ -136,7 +139,7 @@ gdfs = []
 
 # Read each .dbf file into a GeoDataFrame
 for file_path in file_paths:
-    file_full_path = os.path.join(base_dir, file_path)
+    file_full_path = os.path.join(base_dir, file_path)  # type: ignore
     try:
         gdf = gpd.read_file(file_full_path)
         if "_NullFlags" in gdf.columns:
@@ -178,14 +181,28 @@ if gdfs:
 
     # df_add_probability, result = add_default_probability(merged_df)
     # df_add_probability.result = result
-    df_add_probability = merged_df
-    df_add_probability.metadata = {"source": "data_source.csv", "created_by": "David"}
+    df = merged_df
+    # df2.metadata = {"source": "data_source.csv", "created_by": "David"}
+
+    # df2, details, new_columns = gen_sloan_score(df2)
+    # df2, details, new_columns = gen_logit_pd(df2)
+
+    custom_field_script_list = [gen_sloan_score, gen_logit_pd]
+    custom_field_script_results = []
+    for custom_field_script in custom_field_script_list:
+        df, details, new_columns = custom_field_script(df)
+        custom_field_script_results.append(
+            (custom_field_script.__name__, details, new_columns)
+        )
+    print(custom_field_script_results)
+    # assert False
+    df.metadata = {"custom_field_scripts": custom_field_script_results}
 
     if False:
-        df_add_probability.to_parquet("merged_data.parquet")
+        df.to_parquet("merged_data.parquet")
     else:
         to_parquet_with_metadata(
-            df_add_probability,
+            df,
             "merged_data.parquet",
             # {"source": "data_source.csv", "created_by": "David"},
         )

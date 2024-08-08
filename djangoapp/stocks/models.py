@@ -1,3 +1,4 @@
+import json
 from django.db import models
 from django.db.models import QuerySet, Sum, Count, ExpressionWrapper
 from django.db.models import (
@@ -24,8 +25,8 @@ import os
 import pickle
 
 # from .add_qt_pd import gen_logit_pd
-from .custom_fields.gen_logit_pd import gen_logit_pd
-from .custom_fields.gen_sloan_score import gen_sloan_score
+# from .custom_fields.gen_logit_pd import gen_logit_pd
+# from .custom_fields.gen_sloan_score import gen_sloan_score
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 import io
@@ -381,14 +382,16 @@ class SIPFlatFile(models.Model):
         # print(df.metadata)
 
         # Add the new column
-        custom_field_script_list = [gen_sloan_score, gen_logit_pd]
-        custom_field_script_results = []
-        for custom_field_script in custom_field_script_list:
-            df, details, new_columns = custom_field_script(df)
-            custom_field_script_results.append(
-                (custom_field_script.__name__, details, new_columns)
-            )
+        # custom_field_script_list = [gen_sloan_score, gen_logit_pd]
+        # custom_field_script_results = []
+        # for custom_field_script in custom_field_script_list:
+        #     df, details, new_columns = custom_field_script(df)
+        #     custom_field_script_results.append(
+        #         (custom_field_script.__name__, details, new_columns)
+        #     )
         # df, script_name, details, new_columns = gen_logit_pd(df)
+
+        custom_field_script_results = df.metadata["custom_field_scripts"]
 
         # Save the modified DataFrame to a new in-memory buffer
         modified_buffer = io.BytesIO()
