@@ -39,6 +39,6 @@ def get_current_sip_dataframe() -> pd.DataFrame:
     )
     # sip_df = pd.read_parquet(sip_file_path)
     sip_df = read_parquet_with_metadata(sip_file_path, index_name="ci_ticker")
-    print("metadata")
-    print(sip_df.metadata)
+    # print("metadata")
+    # print(sip_df.metadata)
     return sip_df
