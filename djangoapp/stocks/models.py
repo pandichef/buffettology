@@ -376,7 +376,7 @@ class SIPFlatFile(models.Model):
         df = pd.read_parquet(buffer)
 
         # Add the new column
-        custom_field_script_list = [gen_logit_pd, gen_sloan_score]
+        custom_field_script_list = [gen_sloan_score, gen_logit_pd]
         custom_field_script_results = []
         for custom_field_script in custom_field_script_list:
             df, details, new_columns = custom_field_script(df)
@@ -428,7 +428,7 @@ class SIPFlatFile(models.Model):
 
 class CustomFieldScript(models.Model):
     # field_name = models.TextField(null=True, blank=True)
-    name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=100)
     # description = models.CharField(max_length=255, unique=False)
     details = models.TextField(null=True, blank=True)
     sip_flat_file = models.ForeignKey(
@@ -439,13 +439,16 @@ class CustomFieldScript(models.Model):
         # blank=True,
     )
 
+    class Meta:
+        unique_together = ("name", "sip_flat_file")
+
     def __str__(self):
         return f"{str(self.name)}"
 
 
 class CustomField(models.Model):
     # field_name = models.TextField(null=True, blank=True)
-    name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=100)
     description = models.CharField(max_length=255, unique=False)
     # details = models.TextField(null=True, blank=True)
     sip_flat_file = models.ForeignKey(
@@ -466,6 +469,9 @@ class CustomField(models.Model):
     def save(self, *args, **kwargs):
         self.description = sip_data_dictionary[self.name]
         super().save(*args, **kwargs)
+
+    class Meta:
+        unique_together = ("name", "sip_flat_file")
 
     def __str__(self):
         return f"{str(self.name)}"

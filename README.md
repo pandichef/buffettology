@@ -9,3 +9,11 @@ This project uses the new [gpt-3.5-turbo](https://platform.openai.com/docs/guide
 ## Usage
 
 1. TBD
+
+## Asset Classes
+
+1. Long Equities
+2. Short Equities
+3. Private Equity
+4. Venture
+5. DeFi
