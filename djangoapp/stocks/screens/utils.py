@@ -13,7 +13,7 @@ from typing import Tuple
 import json
 
 
-def read_parquet_with_metadata(path, index_name: str | None = None) -> pd.DataFrame:
+def read_parquet_with_metadata(path) -> pd.DataFrame:
     table = pq.read_table(path)
     # index_name = json.loads(table.schema.metadata[b"pandas"].decode("utf-8"))[
     #     "index_columns"
@@ -38,7 +38,7 @@ def get_current_sip_dataframe() -> pd.DataFrame:
         settings.MEDIA_ROOT, datetime.now().strftime("%Y%m%d") + ".parquet"
     )
     # sip_df = pd.read_parquet(sip_file_path)
-    sip_df = read_parquet_with_metadata(sip_file_path, index_name="ci_ticker")
+    sip_df = read_parquet_with_metadata(sip_file_path)
     # print("metadata")
     # print(sip_df.metadata)
     return sip_df

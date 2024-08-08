@@ -376,7 +376,7 @@ class SIPFlatFile(models.Model):
         buffer = io.BytesIO(self.file.read())
 
         # pd.read_parquet
-        df = read_parquet_with_metadata(buffer, index_name="ci_ticker")
+        df = read_parquet_with_metadata(buffer)
         # print("metadata")
         # print(df.metadata)
 
